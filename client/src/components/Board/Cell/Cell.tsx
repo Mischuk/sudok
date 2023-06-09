@@ -1,8 +1,9 @@
 import { FC } from "react";
 import { Root } from "./Cell.styles";
+import { CellValue } from "../../../utils/types";
 
 interface Props {
-  value: number | null;
+  value: CellValue;
 }
 
 export const Cell: FC<Props> = ({ value }) => {

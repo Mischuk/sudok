@@ -1,9 +1,10 @@
 import { FC } from "react";
 import { Cell } from "../Cell/Cell";
 import { Cells, Root } from "./Row.styles";
+import { CellValue } from "../../../utils/types";
 
 interface Props {
-  value?: (null | number)[];
+  value?: CellValue[];
 }
 
 export const Row: FC<Props> = ({ value = [] }) => {

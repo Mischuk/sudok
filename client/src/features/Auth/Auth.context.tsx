@@ -1,11 +1,11 @@
 import { createContext, useState } from "react";
 import { socket } from "../../api/instances";
-import { EVENTS } from "../../utils/ws";
+import { DTO_Player, EVENTS } from "utils";
 
 interface AuthContextType {
   user: number;
   isAuth: boolean;
-  signIn: (data: { charCode: number; id: string }, callback?: VoidFunction) => void;
+  signIn: (data: DTO_Player, callback?: VoidFunction) => void;
   signOut: (callback?: VoidFunction) => void;
 }
 
@@ -15,7 +15,7 @@ const INIT_USER_DATA: { user: number; isAuth: boolean } = { user: null!, isAuth:
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [{ user, isAuth }, setUser] = useState(INIT_USER_DATA);
 
-  const signIn = ({ charCode, id }: { charCode: number; id: string }, callback = () => {}) => {
+  const signIn = ({ charCode, id }: DTO_Player, callback = () => {}) => {
     setUser({ user: charCode, isAuth: true });
 
     socket.emit(EVENTS.PLAYER.CONNECT.CLIENT, { id, charCode });

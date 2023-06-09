@@ -1,7 +1,6 @@
-import { Diff } from "../../utils/enum";
 import { DifficultSelector, Root } from "./Difficults.styles";
 import { socket } from "../../api/instances";
-import { EVENTS } from "../../utils/ws";
+import { Diff, EVENTS } from "utils";
 
 export const Difficults = () => {
   const onSelect = (diff: Diff) => socket.emit(EVENTS.DIFF.CLIENT, { diff });

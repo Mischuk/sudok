@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { socket } from "../../api/instances";
-import { EVENTS } from "../../utils/ws";
 import { Game, GameInfo, GameStatus } from "./Home.types";
+import { DTO_Game, DTO_Player, EVENTS } from "utils";
 
 export const usePlayers = () => {
-  const [players, setPlayers] = useState<{ charCode: number; id: string }[]>([]);
+  const [players, setPlayers] = useState<DTO_Player[]>([]);
 
   useEffect(() => {
     socket.on(EVENTS.PLAYER.CONNECT.SERVER, ({ players }) => {
@@ -33,7 +33,7 @@ const getValues = (data: string[]) => data.map((v: string) => (v !== DOT ? Numbe
 const getChunks = ({ value, range }: { value: string; range: Range }) => {
   return getValues(value.split("").slice(range[0], range[1]));
 };
-const getMatrix = ({ puzzle, solution }: { puzzle: string; solution: string }): GameInfo[] => {
+const getMatrix = ({ puzzle, solution }: DTO_Game): GameInfo[] => {
   const chunkSize = 9;
   const data: GameInfo[] = [];
 
@@ -60,7 +60,7 @@ export const useGame = () => {
     []
   );
 
-  const run = useCallback((data: { puzzle: string; solution: string }) => {
+  const run = useCallback((data: DTO_Game) => {
     setGame({
       state: GameStatus.Process,
       data: getMatrix(data),

@@ -4,9 +4,9 @@ import { HomeContext } from "./Home.context";
 import { useGame, usePlayers } from "./Home.hooks";
 import { Root, Waiting } from "./Home.styles";
 import { socket } from "../../api/instances";
-import { EVENTS } from "../../utils/ws";
 import { GameStatus } from "./Home.types";
 import { Game } from "../Game/Game";
+import { EVENTS } from "utils";
 
 const MIN_PLAYERS = 2;
 

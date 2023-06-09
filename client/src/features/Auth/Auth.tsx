@@ -4,9 +4,9 @@ import { Routes } from "../../utils/enum";
 import { abortController } from "../../utils/abortController";
 import { api } from "../../api/instances";
 import { useQuery } from "react-query";
+import { DTO_Player } from "utils";
 
 let controller: AbortController;
-type ResponseType = { charCode: number; id: string };
 
 const Auth = () => {
   let navigate = useNavigate();
@@ -14,10 +14,10 @@ const Auth = () => {
 
   const { isError } = useQuery(
     ["auth"],
-    async (): Promise<ResponseType> => {
+    async (): Promise<DTO_Player> => {
       controller = abortController(controller);
 
-      const response = await api.get<ResponseType>("/auth");
+      const response = await api.get<DTO_Player>("/auth");
       return response.data;
     },
     {

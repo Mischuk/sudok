@@ -1,12 +1,12 @@
 import axios from "axios";
 import { QueryClient } from "react-query";
 import { io } from "socket.io-client";
-
+import { ADDRESS, BASE_URL, PORT } from "utils";
 /*
     AXIOS
 */
 const axiosInstance = axios.create({
-  baseURL: `http://10.0.1.3:8000/api`,
+  baseURL: BASE_URL,
 });
 
 axiosInstance.interceptors.response.use(
@@ -39,6 +39,6 @@ const queryClient = new QueryClient({
 /*
     WEBSOCKET
 */
-const socket = io("http://10.0.1.3:8000");
+const socket = io(`http://${ADDRESS}:${PORT}`);
 
 export { axiosInstance as api, queryClient, socket };

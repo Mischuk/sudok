@@ -3,10 +3,3 @@ export enum Routes {
   Settings = "settings",
   Home = "/",
 }
-
-export enum Diff {
-  Easy = "Easy",
-  Normal = "Normal",
-  Hard = "Hard",
-  Ultra = "Ultra",
-}

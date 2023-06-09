@@ -4,15 +4,12 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { ioServerOptions } from "./configs/options";
-import { EVENTS } from "./enums/ws.events";
 import { ServerClient } from "./models/ServerClient";
 import RouteAuth from "./routes/auth.routes";
 import RouteMessage from "./routes/messages.routes";
 import RouteAll from "./routes/all.routes";
-import { PORT } from "./utils/constants";
-import { Diff } from "./enums";
-import { readFile } from "./utils/fs";
-import { getRandomInt } from "./utils";
+import { DTO_Players, getRandomPuzzle } from "./utils";
+import { EVENTS, Diff, PORT } from "utils";
 
 const app = express();
 const httpServer = createServer(app);
@@ -26,69 +23,9 @@ app.use("/api/auth", RouteAuth);
 app.use("/api/messages", RouteMessage);
 app.use("/api/all", RouteAll);
 
-const DTO_Players = (players: ServerClient[]) =>
-  players.map(({ id, charCode }) => ({
-    id,
-    charCode,
-  }));
-interface GameDiff {
-  socketId: string;
-  diff: Diff;
-}
-
-const updateSelectDiff = ({
-  gameDiff,
-  id,
-  diff,
-}: {
-  diff: Diff;
-  gameDiff: GameDiff[];
-  id: string;
-}) => {
-  const temp = [...gameDiff];
-  const findIdx = temp.findIndex((el) => el.socketId === id);
-
-  if (findIdx >= 0) {
-    temp.splice(findIdx, 1);
-  }
-
-  temp.push({
-    socketId: id,
-    diff,
-  });
-
-  return temp;
-};
-
-const getSelectedDiffState = ({ gameDiff }: { gameDiff: GameDiff[] }) => {
-  const selectedDiffs = new Set(gameDiff.map(({ diff }) => diff));
-  return {
-    isReady: gameDiff.length === 2 && selectedDiffs.size === 1,
-    difficult: gameDiff[0]?.diff?.toLowerCase() as Diff,
-  };
-};
-
-const getPuzzlesFromFile = async (filename: string) => {
-  const data = await readFile(`${filename}.json`);
-  return data;
-};
-
-const getRandomPuzzle = async (diff: Diff) => {
-  const puzzles: any = await getPuzzlesFromFile(diff);
-
-  if (puzzles) {
-    const { data = [] } = puzzles;
-    const randomIndex = getRandomInt(0, data.length - 1);
-    return data[randomIndex];
-  }
-
-  return null;
-};
-
 async function start() {
   try {
     const clients: ServerClient[] = [];
-    let gameDiff: GameDiff[] = [];
 
     httpServer.listen(PORT);
 
@@ -123,14 +60,11 @@ async function start() {
         io.emit(EVENTS.GAME.PREPARE.SERVER);
         const data = await getRandomPuzzle(diff);
 
-        setTimeout(() => {
-          io.emit(EVENTS.GAME.START.SERVER, { puzzle: data.puzzle, solution: data.solution });
-        }, 500);
+        io.emit(EVENTS.GAME.START.SERVER, { puzzle: data.puzzle, solution: data.solution });
       });
     });
   } catch (e) {
     console.error(e);
-
     process.exit(1);
   }
 }

@@ -1,8 +1,9 @@
 import { ServerOptions } from "socket.io";
+import { ADDRESS, CLIENT_PORT } from "utils";
 
 const ioServerOptions: Partial<ServerOptions> = {
   cors: {
-    origin: ["http://localhost:3000", "http://10.0.1.3:3000"],
+    origin: [`http://localhost:${CLIENT_PORT}`, `http://${ADDRESS}:${CLIENT_PORT}`],
     methods: ["GET", "POST"],
   },
 };

@@ -1,3 +1,5 @@
+import { CellValue } from "../../utils/types";
+
 export enum GameStatus {
   Init = "Init",
   Prepare = "Prepare",
@@ -6,8 +8,8 @@ export enum GameStatus {
 
 export interface GameInfo {
   id: number;
-  puzzle: (number | null)[];
-  solution: (number | null)[];
+  puzzle: CellValue[];
+  solution: CellValue[];
 }
 
 export interface Game {
