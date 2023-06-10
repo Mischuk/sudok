@@ -18,6 +18,7 @@ export const LandscapeLocker = styled("div")`
   width: 100%;
   z-index: 9999;
   background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
+  opacity: 0.9;
 
   @media screen and (orientation: landscape) {
     display: flex;

@@ -3,6 +3,10 @@ body {
   font-family: 'Futura', 'Chalkboard SE';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --select-cell: #8fd5ee;
+  --select-axis: #e8eff1;
+  --select-number: #a7cdda;
 }
 
 *, &:after, *:before { box-sizing: border-box; }

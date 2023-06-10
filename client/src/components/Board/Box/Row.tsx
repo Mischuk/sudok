@@ -1,18 +1,28 @@
-import { FC } from "react";
+import { FC, useContext } from "react";
 import { Cell } from "../Cell/Cell";
 import { Cells, Root } from "./Row.styles";
 import { CellValue } from "../../../utils/types";
+import { GameContext } from "../../../features/Game/Game.context";
 
 interface Props {
-  value?: CellValue[];
+  cells?: CellValue[];
+  rowIndex: number;
 }
 
-export const Row: FC<Props> = ({ value = [] }) => {
+export const Row: FC<Props> = ({ rowIndex, cells = [] }) => {
+  const { selected } = useContext(GameContext);
+
   return (
-    <Root>
+    <Root $isSelected={selected.position?.row === rowIndex}>
       <Cells>
-        {value.map((v, idx) => {
-          return <Cell value={v} key={idx} />;
+        {cells.map((cell, idx) => {
+          return (
+            <Cell
+              key={idx}
+              position={{ row: rowIndex, col: idx }}
+              value={cell}
+            />
+          );
         })}
       </Cells>
     </Root>

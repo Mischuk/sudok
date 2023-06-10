@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, memo } from "react";
 import { Root, Rows } from "./Board.styles";
 import { Row } from "./Box/Row";
 import { GameInfo } from "../../features/Home/Home.types";
@@ -9,16 +9,16 @@ interface Props {
   data: GameInfo[];
 }
 
-export const Board: FC<Props> = ({ isLoading, data }) => {
+export const Board: FC<Props> = memo(({ isLoading, data }) => {
   return (
     <Root>
       <Rows>
-        {data.map((r) => (
-          <Row value={r.puzzle} key={r.id} />
+        {data.map((row, rowIndex) => (
+          <Row cells={row.puzzle} key={row.id} rowIndex={rowIndex} />
         ))}
       </Rows>
 
       {isLoading && <Loader />}
     </Root>
   );
-};
+});
