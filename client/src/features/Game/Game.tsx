@@ -7,7 +7,7 @@ import { Board } from "../../components/Board/Board";
 import { Healthbar } from "../../components/Healthbar/Healthbar";
 import { Control } from "../../components/Control/Control";
 import { GameContext, SelectedCell } from "./Game.context";
-import { GameRow } from "../Home/Home.hooks";
+import { GameCell, GameRow, INITIAL_CELL } from "../Home/Home.hooks";
 import { deepCopy, toggleNum } from "./Game.utils";
 
 interface Props {
@@ -28,44 +28,57 @@ export const Game: FC<Props> = ({ status, data }) => {
   const [history, setHistory] = useState<GameRow[][]>([]);
   const [HP, setHP] = useState(INITIAL_HP);
 
+  const pushToHistory = () => setHistory((p) => [...p, deepCopy<GameRow[]>(gameData)]);
+
+  const currents = () => {
+    const { position } = selected;
+    if (!position)
+      return { cell: INITIAL_CELL, updateCell: (_: Partial<GameCell>) => {} };
+
+    const rows = deepCopy<GameRow[]>(gameData);
+    const cell = rows[position.row].cells[position.col];
+
+    const updateCell = (nextCell: Partial<GameCell>) => {
+      pushToHistory();
+
+      rows[position.row].cells[position.col] = {
+        ...cell,
+        ...nextCell,
+      };
+
+      setGameData([...rows]);
+    };
+
+    return { cell, updateCell };
+  };
+
   const onClickNum = (num: CellNotes) => {
     const { position, value } = selected;
 
     if (!position || value) return;
 
-    setHistory((prev) => [...prev, deepCopy<GameRow[]>(gameData)]);
-
-    const rows = deepCopy<GameRow[]>(gameData);
-    const cell = rows[position.row].cells[position.col];
+    const { cell, updateCell } = currents();
 
     if (isNotes) {
-      rows[position.row].cells[position.col] = {
-        ...cell,
-        notes: [...toggleNum(cell.notes, num)],
-      };
-      setGameData([...rows]);
+      updateCell({ notes: [...toggleNum(cell.notes, num)] });
     }
 
     if (!isNotes) {
-      const { answer } = cell;
-      const error = answer !== num;
+      const error = cell.answer !== num;
 
-      rows[position.row].cells[position.col] = {
-        ...cell,
+      updateCell({
         value: num,
         error,
-      };
-
-      if (error) {
-        setHP((prev) => prev - 1);
-      }
-
-      setGameData([...rows]);
+      });
 
       onSelectCell((prev) => ({
         ...prev,
         value: num,
       }));
+
+      if (error) {
+        setHP((prev) => prev - 1);
+      }
     }
   };
 
@@ -74,6 +87,15 @@ export const Game: FC<Props> = ({ status, data }) => {
     setGameData(history[history.length - 1]);
     setHistory((prev) => prev.slice(0, -1));
   };
+
+  const onClearCell = () => {
+    const { position } = selected;
+
+    if (!position) return;
+    const { updateCell } = currents();
+    updateCell({ value: null, notes: [], error: false });
+  };
+
   useEffect(() => {
     setGameData(data);
   }, [data]);
@@ -88,7 +110,9 @@ export const Game: FC<Props> = ({ status, data }) => {
             <Control size={90} onClick={onBackward} disabled={!history.length}>
               ⬅
             </Control>
-            <Control size={80}>❌</Control>
+            <Control size={70} onClick={onClearCell}>
+              ❌
+            </Control>
             <Control>💡</Control>
             <Control>🎲</Control>
           </FieldActions>
@@ -109,11 +133,7 @@ export const Game: FC<Props> = ({ status, data }) => {
           <Num onClick={() => onClickNum(7)}>7</Num>
           <Num onClick={() => onClickNum(8)}>8</Num>
           <Num onClick={() => onClickNum(9)}>9</Num>
-          <Num
-            type="note"
-            isActive={isNotes}
-            onClick={() => setIsNotes(!isNotes)}
-          >
+          <Num type="note" isActive={isNotes} onClick={() => setIsNotes(!isNotes)}>
             ✏️
           </Num>
         </Numbers>

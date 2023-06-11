@@ -21,15 +21,15 @@ export const usePlayers = () => {
 };
 
 const INITIAL_PUZZLES = new Array(9).fill(null);
-
+export const INITIAL_CELL = {
+  value: null,
+  answer: 0,
+  notes: [],
+  error: false,
+};
 const INITIAL_DATA: GameRow[] = new Array(9).fill(null).map((_, index) => ({
   id: index + 1,
-  cells: INITIAL_PUZZLES.map((o) => ({
-    value: null,
-    answer: 0,
-    notes: [],
-    error: false,
-  })),
+  cells: INITIAL_PUZZLES.map((o) => INITIAL_CELL),
 }));
 
 const DOT = ".";
