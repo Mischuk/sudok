@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { socket } from "../../api/instances";
-import { Game, GameInfo, GameStatus } from "./Home.types";
+import { CellNotes, Game, GameInfo, GameStatus } from "./Home.types";
 import { DTO_Game, DTO_Player, EVENTS } from "utils";
+import { CellValue } from "../../utils/types";
 
 export const usePlayers = () => {
   const [players, setPlayers] = useState<DTO_Player[]>([]);
@@ -21,15 +22,19 @@ export const usePlayers = () => {
 
 const INITIAL_PUZZLES = new Array(9).fill(null);
 
-const INITIAL_DATA: GameInfo[] = new Array(9).fill(null).map((_, index) => ({
+const INITIAL_DATA: GameRow[] = new Array(9).fill(null).map((_, index) => ({
   id: index + 1,
-  puzzle: [...INITIAL_PUZZLES],
-  solution: [...INITIAL_PUZZLES],
+  cells: INITIAL_PUZZLES.map((o) => ({
+    value: null,
+    answer: 0,
+    notes: [],
+  })),
 }));
 
 const DOT = ".";
 type Range = [number, number];
-const getValues = (data: string[]) => data.map((v: string) => (v !== DOT ? Number(v) : null));
+const getValues = (data: string[]) =>
+  data.map((v: string) => (v !== DOT ? Number(v) : null));
 const getChunks = ({ value, range }: { value: string; range: Range }) => {
   return getValues(value.split("").slice(range[0], range[1]));
 };
@@ -42,11 +47,41 @@ const getMatrix = ({ puzzle, solution }: DTO_Game): GameInfo[] => {
     data.push({
       id: i,
       puzzle: getChunks({ value: puzzle, range }),
-      solution: getChunks({ value: solution, range }),
+      solution: getChunks({ value: solution, range }) as number[],
     });
   }
 
   return data;
+};
+export interface GameCell {
+  value: CellValue;
+  answer: number;
+  notes: CellNotes[];
+}
+
+export interface GameRow {
+  id: number;
+  cells: GameCell[];
+}
+
+const getRow = ({
+  id,
+  puzzle,
+  solution,
+}: {
+  id: number;
+  puzzle: CellValue[];
+  solution: number[];
+}): GameRow => {
+  const notes: CellNotes[] = [];
+  return {
+    id,
+    cells: puzzle.map((cell, cellIndex) => ({
+      value: cell,
+      answer: solution[cellIndex],
+      notes,
+    })),
+  };
 };
 
 export const useGame = () => {
@@ -63,12 +98,17 @@ export const useGame = () => {
   const run = useCallback((data: DTO_Game) => {
     setGame({
       state: GameStatus.Process,
-      data: getMatrix(data),
+      data: getMatrix(data).map(getRow),
     });
   }, []);
 
   return useMemo(
-    () => ({ changeStatus: changeGameStatus, status: game.state, run, data: game.data }),
+    () => ({
+      changeStatus: changeGameStatus,
+      status: game.state,
+      run,
+      data: game.data,
+    }),
     [changeGameStatus, game.state, run, game.data]
   );
 };

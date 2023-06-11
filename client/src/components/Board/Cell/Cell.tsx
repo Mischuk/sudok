@@ -1,17 +1,20 @@
 import { FC, useContext } from "react";
-import { Root } from "./Cell.styles";
+import { NumNote, Root } from "./Cell.styles";
 import {
   CellCoordinates,
   GameContext,
 } from "../../../features/Game/Game.context";
 import { CellValue } from "../../../utils/types";
+import { NUM_NOTE_POSITION } from "./Cell.consts";
+import { CellNotes } from "../../../features/Home/Home.types";
 
 interface Props {
   position: CellCoordinates;
   value: CellValue;
+  notes: CellNotes[];
 }
 
-export const Cell: FC<Props> = ({ value, position: { col, row } }) => {
+export const Cell: FC<Props> = ({ value, position: { col, row }, notes }) => {
   const { onSelectCell, selected } = useContext(GameContext);
 
   const isSelected =
@@ -28,6 +31,16 @@ export const Cell: FC<Props> = ({ value, position: { col, row } }) => {
       $isActive={isActive}
     >
       {value}
+      {notes.map((note) => (
+        <NumNote
+          key={note}
+          $isActive={selected.value === note}
+          $isSelected={isSelected}
+          style={{ ...NUM_NOTE_POSITION[note] }}
+        >
+          {note}
+        </NumNote>
+      ))}
     </Root>
   );
 };

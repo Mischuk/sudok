@@ -1,11 +1,11 @@
 import { FC, useContext } from "react";
 import { Cell } from "../Cell/Cell";
 import { Cells, Root } from "./Row.styles";
-import { CellValue } from "../../../utils/types";
 import { GameContext } from "../../../features/Game/Game.context";
+import { GameCell } from "../../../features/Home/Home.hooks";
 
 interface Props {
-  cells?: CellValue[];
+  cells?: GameCell[];
   rowIndex: number;
 }
 
@@ -20,7 +20,8 @@ export const Row: FC<Props> = ({ rowIndex, cells = [] }) => {
             <Cell
               key={idx}
               position={{ row: rowIndex, col: idx }}
-              value={cell}
+              value={cell.value}
+              notes={cell.notes}
             />
           );
         })}

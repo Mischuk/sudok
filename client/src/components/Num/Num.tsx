@@ -1,11 +1,23 @@
 import { FC, PropsWithChildren } from "react";
-import { Root, Value } from "./Num.styles";
+import { Root, Status, Value } from "./Num.styles";
 
-interface Props {}
+type InputNum = "num" | "note";
 
-export const Num: FC<PropsWithChildren<Props>> = ({ children }) => {
+interface Props {
+  isActive?: boolean;
+  type?: InputNum;
+  onClick?: () => void;
+}
+
+export const Num: FC<PropsWithChildren<Props>> = ({
+  type = "num",
+  children,
+  isActive,
+  onClick,
+}) => {
   return (
-    <Root>
+    <Root onClick={onClick}>
+      {type === "note" && isActive && <Status />}
       <Value>{children}</Value>
     </Root>
   );

@@ -19,3 +19,18 @@ export const Value = styled("div")`
   font-weight: bold;
   font-size: 32px;
 `;
+
+export const Status = styled("div")`
+  position: absolute;
+  right: 0;
+  top: 0;
+  background-color: #70a3f9;
+  color: #fff;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+`;
