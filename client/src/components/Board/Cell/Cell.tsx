@@ -12,9 +12,15 @@ interface Props {
   position: CellCoordinates;
   value: CellValue;
   notes: CellNotes[];
+  error: boolean;
 }
 
-export const Cell: FC<Props> = ({ value, position: { col, row }, notes }) => {
+export const Cell: FC<Props> = ({
+  value,
+  position: { col, row },
+  notes,
+  error,
+}) => {
   const { onSelectCell, selected } = useContext(GameContext);
 
   const isSelected =
@@ -29,18 +35,21 @@ export const Cell: FC<Props> = ({ value, position: { col, row }, notes }) => {
       $isSelected={isSelected}
       $isHighlighted={isHighlighted}
       $isActive={isActive}
+      $isError={error}
     >
       {value}
-      {notes.map((note) => (
-        <NumNote
-          key={note}
-          $isActive={selected.value === note}
-          $isSelected={isSelected}
-          style={{ ...NUM_NOTE_POSITION[note] }}
-        >
-          {note}
-        </NumNote>
-      ))}
+
+      {!value &&
+        notes.map((note) => (
+          <NumNote
+            key={note}
+            $isActive={selected.value === note}
+            $isSelected={isSelected}
+            style={{ ...NUM_NOTE_POSITION[note] }}
+          >
+            {note}
+          </NumNote>
+        ))}
     </Root>
   );
 };

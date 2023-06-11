@@ -1,9 +1,11 @@
 import { css, styled } from "styled-components";
 
-export const NumNote = styled("div")<{
+interface NumNoteProps {
   $isActive: boolean;
   $isSelected: boolean;
-}>`
+}
+
+export const NumNote = styled("div")<NumNoteProps>`
   font-size: 11px;
   line-height: 1;
   position: absolute;
@@ -14,22 +16,22 @@ export const NumNote = styled("div")<{
   justify-content: center;
   color: ${(prop) => (prop.$isSelected ? "#666666" : "#a3a3a3")};
 
-  ${({ $isActive }) => {
-    return (
-      $isActive &&
-      css`
-        font-weight: bold;
-        color: #000;
-      `
-    );
-  }}
+  ${({ $isActive }) =>
+    $isActive &&
+    css`
+      font-weight: bold;
+      color: #000;
+    `}
 `;
 
-export const Root = styled("div")<{
+interface RootProps {
   $isSelected: boolean;
   $isHighlighted: boolean;
   $isActive: boolean;
-}>`
+  $isError: boolean;
+}
+
+export const Root = styled("div")<RootProps>`
   width: calc(100% / 9);
   height: 100%;
   display: flex;
@@ -52,30 +54,28 @@ export const Root = styled("div")<{
     border-right: 1px solid black;
   }
 
-  ${({ $isHighlighted }) => {
-    return (
-      $isHighlighted &&
-      css`
-        background: var(--select-axis);
-      `
-    );
-  }}
+  ${({ $isHighlighted }) =>
+    $isHighlighted &&
+    css`
+      background: var(--select-axis);
+    `}
 
-  ${({ $isActive }) => {
-    return (
-      $isActive &&
-      css`
-        background: var(--select-number);
-      `
-    );
-  }}
+  ${({ $isActive }) =>
+    $isActive &&
+    css`
+      background: var(--select-number);
+    `}
 
-  ${({ $isSelected }) => {
-    return (
-      $isSelected &&
-      css`
-        background: var(--select-cell);
-      `
-    );
-  }}
+  ${({ $isError }) =>
+    $isError &&
+    css`
+      background: #ffc8d2;
+      color: #ea2f2f;
+    `}
+
+  ${({ $isSelected }) =>
+    $isSelected &&
+    css`
+      background: var(--select-cell);
+    `}
 `;

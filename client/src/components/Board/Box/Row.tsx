@@ -22,6 +22,7 @@ export const Row: FC<Props> = ({ rowIndex, cells = [] }) => {
               position={{ row: rowIndex, col: idx }}
               value={cell.value}
               notes={cell.notes}
+              error={cell.error}
             />
           );
         })}

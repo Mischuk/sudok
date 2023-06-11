@@ -28,6 +28,7 @@ const INITIAL_DATA: GameRow[] = new Array(9).fill(null).map((_, index) => ({
     value: null,
     answer: 0,
     notes: [],
+    error: false,
   })),
 }));
 
@@ -57,6 +58,7 @@ export interface GameCell {
   value: CellValue;
   answer: number;
   notes: CellNotes[];
+  error: boolean;
 }
 
 export interface GameRow {
@@ -80,6 +82,7 @@ const getRow = ({
       value: cell,
       answer: solution[cellIndex],
       notes,
+      error: false,
     })),
   };
 };

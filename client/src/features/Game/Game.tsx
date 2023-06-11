@@ -8,42 +8,72 @@ import { Healthbar } from "../../components/Healthbar/Healthbar";
 import { Control } from "../../components/Control/Control";
 import { GameContext, SelectedCell } from "./Game.context";
 import { GameRow } from "../Home/Home.hooks";
+import { deepCopy, toggleNum } from "./Game.utils";
 
 interface Props {
   status: GameStatus;
   data: GameRow[];
 }
+const INITIAL_SELECTED = {
+  position: null,
+  value: null,
+};
+
+const INITIAL_HP = 3;
 
 export const Game: FC<Props> = ({ status, data }) => {
   const [isNotes, setIsNotes] = useState(false);
-  const [selected, onSelectCell] = useState<SelectedCell>({
-    position: null,
-    value: null,
-  });
-  const toggleNum = (arr: CellNotes[], item: CellNotes) =>
-    arr.includes(item) ? arr.filter((i) => i !== item) : [...arr, item];
+  const [selected, onSelectCell] = useState<SelectedCell>(INITIAL_SELECTED);
   const [gameData, setGameData] = useState<GameRow[]>([]);
-
-  const deepCopy = (obj: Object) => JSON.parse(JSON.stringify(obj));
+  const [history, setHistory] = useState<GameRow[][]>([]);
+  const [HP, setHP] = useState(INITIAL_HP);
 
   const onClickNum = (num: CellNotes) => {
     const { position, value } = selected;
 
     if (!position || value) return;
 
+    setHistory((prev) => [...prev, deepCopy<GameRow[]>(gameData)]);
+
+    const rows = deepCopy<GameRow[]>(gameData);
+    const cell = rows[position.row].cells[position.col];
+
     if (isNotes) {
-      const temp: GameRow[] = deepCopy(gameData);
-
-      const cell = temp[position.row].cells[position.col];
-
-      temp[position.row].cells[position.col] = {
+      rows[position.row].cells[position.col] = {
         ...cell,
         notes: [...toggleNum(cell.notes, num)],
       };
-      setGameData([...temp]);
+      setGameData([...rows]);
+    }
+
+    if (!isNotes) {
+      const { answer } = cell;
+      const error = answer !== num;
+
+      rows[position.row].cells[position.col] = {
+        ...cell,
+        value: num,
+        error,
+      };
+
+      if (error) {
+        setHP((prev) => prev - 1);
+      }
+
+      setGameData([...rows]);
+
+      onSelectCell((prev) => ({
+        ...prev,
+        value: num,
+      }));
     }
   };
 
+  const onBackward = () => {
+    if (!history.length) return;
+    setGameData(history[history.length - 1]);
+    setHistory((prev) => prev.slice(0, -1));
+  };
   useEffect(() => {
     setGameData(data);
   }, [data]);
@@ -55,12 +85,14 @@ export const Game: FC<Props> = ({ status, data }) => {
 
         <Header>
           <FieldActions>
-            <Control size={90}>⬅</Control>
+            <Control size={90} onClick={onBackward} disabled={!history.length}>
+              ⬅
+            </Control>
             <Control size={80}>❌</Control>
             <Control>💡</Control>
             <Control>🎲</Control>
           </FieldActions>
-          <Healthbar />
+          <Healthbar HP={HP} />
         </Header>
 
         <Field>
