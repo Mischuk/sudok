@@ -6,7 +6,7 @@ export const Root = styled("div")`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
+  background: white;
 `;
 
 export const LandscapeLocker = styled("div")`

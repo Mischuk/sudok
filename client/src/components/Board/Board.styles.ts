@@ -4,6 +4,7 @@ export const Root = styled("div")`
   height: 0;
   padding-bottom: 100%;
   position: relative;
+  border: 2px solid black;
 `;
 
 export const Rows = styled("div")`

@@ -5,7 +5,7 @@ export const Root = styled("div")`
   top: 0;
   left: 0;
   width: 100%;
-  height: 30px;
+  height: 10px;
   background: #ff6464;
 `;
 

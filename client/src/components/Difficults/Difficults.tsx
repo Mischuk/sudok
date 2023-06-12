@@ -1,8 +1,11 @@
 import { DifficultSelector, Root } from "./Difficults.styles";
 import { socket } from "../../api/instances";
 import { Diff, EVENTS } from "utils";
+import { FC } from "react";
 
-export const Difficults = () => {
+interface Props {}
+
+export const Difficults: FC<Props> = () => {
   const onSelect = (diff: Diff) => socket.emit(EVENTS.DIFF.CLIENT, { diff });
 
   return (

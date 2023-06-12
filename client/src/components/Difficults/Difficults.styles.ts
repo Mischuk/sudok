@@ -9,10 +9,9 @@ export const Root = styled("div")`
   align-items: center;
 `;
 
-export const DifficultSelector = styled("div")<{ $active?: boolean }>`
+export const DifficultSelector = styled("div")`
   width: calc(50% - 30px);
   height: 20%;
-  background-color: ${(props) => (props.$active ? "#8ecdb5" : "white")};
   color: black;
   margin-left: 15px;
   margin-right: 15px;
@@ -20,6 +19,12 @@ export const DifficultSelector = styled("div")<{ $active?: boolean }>`
   align-items: center;
   justify-content: center;
   text-transform: uppercase;
-  box-shadow: 6px 6px 0
-    ${(props) => (props.$active ? "rgba(50, 50, 50, 0.5)" : "rgba(0, 0, 0, 0.1)")};
+  background: var(--button-bg);
+  color: var(--button-color);
+  font-weight: bold;
+  border-radius: 5px;
+
+  &:active {
+    background: var(--button-bg-active);
+  }
 `;

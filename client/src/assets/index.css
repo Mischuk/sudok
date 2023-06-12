@@ -1,12 +1,16 @@
 body {
   margin: 0;
-  font-family: 'Futura', 'Chalkboard SE';
+  font-family: 'Lato', 'Futura', 'Chalkboard SE', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --select-cell: #8fd5ee;
-  --select-axis: #e8eff1;
-  --select-number: #a7cdda;
+  --select-cell: #a9d4ff;
+  --select-axis: #dce3ed;
+  --select-number: #9dc0e3;
+
+  --button-bg: #dce3ed;
+  --button-color: #0072e3;
+  --button-bg-active: #c9cfd7;
 }
 
 *, &:after, *:before { box-sizing: border-box; }

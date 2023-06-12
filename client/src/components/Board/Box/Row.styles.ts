@@ -19,8 +19,8 @@ export const Root = styled("div")<{ $isSelected: boolean }>`
       left: 0;
       bottom: 0;
       width: 100%;
-      height: 1px;
-      background-color: gray;
+      height: 2px;
+      background-color: black;
     }
   }
 `;

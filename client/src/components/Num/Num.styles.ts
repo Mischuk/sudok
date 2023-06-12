@@ -1,36 +1,28 @@
 import { styled } from "styled-components";
 
 export const Root = styled("div")`
-  height: 0;
-  min-width: 20%;
-  padding-bottom: 20%;
+  min-width: 33%;
   position: relative;
+  flex: 1;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const Value = styled("div")`
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  right: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 32px;
-`;
-
-export const Status = styled("div")`
-  position: absolute;
-  right: 0;
-  top: 0;
-  background-color: #70a3f9;
-  color: #fff;
-  width: 100%;
+  background-color: var(--button-bg);
+  flex: 1;
   height: 100%;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
+  color: var(--button-color);
+  border-radius: 4px;
+
+  &:active {
+    background-color: var(--button-bg-active);
+  }
 `;

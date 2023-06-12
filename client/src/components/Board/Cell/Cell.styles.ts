@@ -51,7 +51,7 @@ export const Root = styled("div")<RootProps>`
   }
   &:nth-child(3),
   &:nth-child(6) {
-    border-right: 1px solid black;
+    border-right: 2px solid black;
   }
 
   ${({ $isHighlighted }) =>
@@ -66,16 +66,17 @@ export const Root = styled("div")<RootProps>`
       background: var(--select-number);
     `}
 
-  ${({ $isError }) =>
-    $isError &&
-    css`
-      background: #ffc8d2;
-      color: #ea2f2f;
-    `}
 
   ${({ $isSelected }) =>
     $isSelected &&
     css`
       background: var(--select-cell);
+    `}
+
+  ${({ $isError }) =>
+    $isError &&
+    css`
+      background: #ffc8d2;
+      color: #ea2f2f;
     `}
 `;

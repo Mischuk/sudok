@@ -1,14 +1,17 @@
 import { FC, useEffect, useState } from "react";
 import { CellNotes, GameStatus } from "../Home/Home.types";
-import { Field, FieldActions, Header, Numbers, Root } from "./Game.styles";
+import { Field, FieldActions, Controls, Numbers, Root } from "./Game.styles";
 import { ProgressBar } from "../../components/ProgressBar/ProgressBar";
 import { Num } from "../../components/Num/Num";
 import { Board } from "../../components/Board/Board";
-import { Healthbar } from "../../components/Healthbar/Healthbar";
 import { Control } from "../../components/Control/Control";
 import { GameContext, SelectedCell } from "./Game.context";
 import { GameCell, GameRow, INITIAL_CELL } from "../Home/Home.hooks";
 import { deepCopy, toggleNum } from "./Game.utils";
+import { ReactComponent as IconBack } from "../../assets/icons/back.svg";
+import { ReactComponent as IconErase } from "../../assets/icons/erase.svg";
+import { ReactComponent as IconNote } from "../../assets/icons/note.svg";
+import { ReactComponent as IconTip } from "../../assets/icons/tip.svg";
 
 interface Props {
   status: GameStatus;
@@ -19,14 +22,11 @@ const INITIAL_SELECTED = {
   value: null,
 };
 
-const INITIAL_HP = 3;
-
 export const Game: FC<Props> = ({ status, data }) => {
   const [isNotes, setIsNotes] = useState(false);
   const [selected, onSelectCell] = useState<SelectedCell>(INITIAL_SELECTED);
   const [gameData, setGameData] = useState<GameRow[]>([]);
   const [history, setHistory] = useState<GameRow[][]>([]);
-  const [HP, setHP] = useState(INITIAL_HP);
 
   const pushToHistory = () => setHistory((p) => [...p, deepCopy<GameRow[]>(gameData)]);
 
@@ -77,7 +77,9 @@ export const Game: FC<Props> = ({ status, data }) => {
       }));
 
       if (error) {
-        setHP((prev) => prev - 1);
+        // TODO: ws event on mistake (open random cell for the opponent)
+      } else {
+        // TODO: ws event on success (re-calc progressbar)
       }
     }
   };
@@ -105,37 +107,37 @@ export const Game: FC<Props> = ({ status, data }) => {
       <Root>
         <ProgressBar />
 
-        <Header>
-          <FieldActions>
-            <Control size={90} onClick={onBackward} disabled={!history.length}>
-              ⬅
-            </Control>
-            <Control size={70} onClick={onClearCell}>
-              ❌
-            </Control>
-            <Control>💡</Control>
-            <Control>🎲</Control>
-          </FieldActions>
-          <Healthbar HP={HP} />
-        </Header>
-
         <Field>
           <Board isLoading={status === GameStatus.Prepare} data={gameData} />
         </Field>
 
+        <Controls>
+          <FieldActions>
+            <Control onClick={onBackward} disabled={!history.length}>
+              <IconBack />
+            </Control>
+            <Control onClick={onClearCell}>
+              <IconErase />
+            </Control>
+            <Control
+              isActive={isNotes}
+              label={isNotes ? "ON" : "OFF"}
+              onClick={() => setIsNotes(!isNotes)}
+            >
+              <IconNote />
+            </Control>
+            <Control label="3" isActive={!!3} styles={{ border: "none" }}>
+              <IconTip />
+            </Control>
+          </FieldActions>
+        </Controls>
+
         <Numbers>
-          <Num onClick={() => onClickNum(1)}>1</Num>
-          <Num onClick={() => onClickNum(2)}>2</Num>
-          <Num onClick={() => onClickNum(3)}>3</Num>
-          <Num onClick={() => onClickNum(4)}>4</Num>
-          <Num onClick={() => onClickNum(5)}>5</Num>
-          <Num onClick={() => onClickNum(6)}>6</Num>
-          <Num onClick={() => onClickNum(7)}>7</Num>
-          <Num onClick={() => onClickNum(8)}>8</Num>
-          <Num onClick={() => onClickNum(9)}>9</Num>
-          <Num type="note" isActive={isNotes} onClick={() => setIsNotes(!isNotes)}>
-            ✏️
-          </Num>
+          {new Array(9).fill(null).map((_, index) => (
+            <Num key={`num${index}`} onClick={() => onClickNum((index + 1) as CellNotes)}>
+              {index + 1}
+            </Num>
+          ))}
         </Numbers>
       </Root>
     </GameContext.Provider>
