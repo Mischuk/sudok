@@ -28,5 +28,9 @@ export const EVENTS = {
   },
   CELL: {
     OPENED: "CELL_OPENED",
+    TIPED: {
+      CLIENT: "C_CELL_TIPED",
+      SERVER: "S_CELL_TIPED",
+    },
   },
 };

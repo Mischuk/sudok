@@ -72,26 +72,34 @@ async function start() {
         game[clients[1].id] = closedCells;
       });
 
+      const updateProgress = async ({ id, cells }: { id: string; cells: number }) => {
+        const secondPlayer = clients.find((c) => c.id !== id) as ServerClient;
+
+        game[id] = cells;
+
+        const total = game[clients[0].id] + game[clients[1].id];
+        const p = total / 100;
+        const num = cells / p;
+        const cur = Math.round(num * 100) / 100;
+        const res = {
+          [id]: 100 - cur,
+          [secondPlayer.id]: cur,
+        };
+
+        clients.forEach((c) => {
+          io.to(c.socketId).emit(EVENTS.GAME.UPDATE_PROGRESS, res[c.id]);
+        });
+
+        return secondPlayer;
+      };
+
+      socket.on(EVENTS.CELL.OPENED, updateProgress);
+
       socket.on(
-        EVENTS.CELL.OPENED,
+        EVENTS.CELL.TIPED.CLIENT,
         async ({ id, cells }: { id: string; cells: number }) => {
-          const secondPlayer = clients.find((c) => c.id !== id);
-          if (!secondPlayer) return;
-
-          game[id] = cells;
-
-          const total = game[clients[0].id] + game[clients[1].id];
-          const p = total / 100;
-          const num = cells / p;
-          const cur = Math.round(num * 100) / 100;
-          const res = {
-            [id]: 100 - cur,
-            [secondPlayer.id]: cur,
-          };
-
-          clients.forEach((c) => {
-            io.to(c.socketId).emit(EVENTS.GAME.UPDATE_PROGRESS, res[c.id]);
-          });
+          const secondPlayer = await updateProgress({ id, cells });
+          io.to(secondPlayer?.socketId).emit(EVENTS.CELL.TIPED.SERVER);
         }
       );
     });

@@ -21,11 +21,12 @@ export const usePlayers = () => {
 };
 
 const INITIAL_PUZZLES = new Array(9).fill(null);
-export const INITIAL_CELL = {
+export const INITIAL_CELL: GameCell = {
   value: null,
   answer: 0,
   notes: [],
   error: false,
+  highlighted: false,
 };
 const INITIAL_DATA: GameRow[] = new Array(9).fill(null).map((_, index) => ({
   id: index + 1,
@@ -59,6 +60,7 @@ export interface GameCell {
   answer: number;
   notes: CellNotes[];
   error: boolean;
+  highlighted?: boolean;
 }
 
 export interface GameRow {

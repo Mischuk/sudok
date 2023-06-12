@@ -28,5 +28,9 @@ export declare const EVENTS: {
     };
     CELL: {
         OPENED: string;
+        TIPED: {
+            CLIENT: string;
+            SERVER: string;
+        };
     };
 };

@@ -1,4 +1,4 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useCallback, useContext, useEffect, useState } from "react";
 import { CellNotes, GameStatus } from "../Home/Home.types";
 import { Field, FieldActions, Controls, Numbers, Root } from "./Game.styles";
 import { ProgressBar } from "../../components/ProgressBar/ProgressBar";
@@ -72,17 +72,20 @@ export const Game: FC<Props> = ({ status, data }) => {
   const [tips, setTips] = useState(MAX_TIPS);
   const [progress, setProgress] = useState(50);
 
-  const pushToHistory = () =>
-    setHistory((p) => [
-      ...p,
-      {
-        selected,
-        data: deepCopy<GameRow[]>(gameData),
-      },
-    ]);
+  const pushToHistory = useCallback(
+    () =>
+      setHistory((p) => [
+        ...p,
+        {
+          selected,
+          data: deepCopy<GameRow[]>(gameData),
+        },
+      ]),
+    [gameData, selected]
+  );
 
-  const currents = () => {
-    const { position } = selected;
+  const currents = (nextSelected?: SelectedCell) => {
+    const { position } = nextSelected || selected;
     if (!position)
       return { cell: INITIAL_CELL, updateCell: (_: Partial<GameCell>) => {} };
 
@@ -128,7 +131,6 @@ export const Game: FC<Props> = ({ status, data }) => {
       if (error) {
         // TODO: ws event on mistake (open random cell for the opponent)
       } else {
-        // TODO: ws event on success (re-calc progressbar)
         socket.emit(EVENTS.CELL.OPENED, {
           id,
           cells: getEmptyCells(gameData).length - 1,
@@ -156,34 +158,54 @@ export const Game: FC<Props> = ({ status, data }) => {
     }));
   };
 
+  const openRandomCell = useCallback(
+    ({
+      data,
+      highlighted,
+      changeSelect = true,
+    }: {
+      data: GameRow[];
+      changeSelect: boolean;
+      highlighted: boolean;
+    }) => {
+      const rows = deepCopy<GameRow[]>(data);
+      const randomCell = getRandomEmptyCell(rows);
+      const cell = rows[randomCell.row].cells[randomCell.col];
+
+      pushToHistory();
+
+      rows[randomCell.row].cells[randomCell.col] = {
+        ...cell,
+        value: randomCell.answer,
+        notes: [],
+        error: false,
+        highlighted,
+      };
+
+      setGameData([...rows]);
+
+      if (changeSelect) {
+        onSelectCell({
+          value: randomCell.answer,
+          position: {
+            col: randomCell.col,
+            row: randomCell.row,
+          },
+        });
+      }
+    },
+    [pushToHistory]
+  );
+
   const onTip = () => {
     if (!tips) return;
-
-    const rows = deepCopy<GameRow[]>(gameData);
-
-    const randomCell = getRandomEmptyCell(gameData);
-    const cell = rows[randomCell.row].cells[randomCell.col];
-
-    pushToHistory();
-
-    rows[randomCell.row].cells[randomCell.col] = {
-      ...cell,
-      value: randomCell.answer,
-      notes: [],
-      error: false,
-    };
-
+    openRandomCell({ data: gameData, changeSelect: true, highlighted: false });
     setTips(tips - 1);
-    setGameData([...rows]);
-    onSelectCell({
-      value: randomCell.answer,
-      position: {
-        col: randomCell.col,
-        row: randomCell.row,
-      },
-    });
 
-    // TODO:  ws event on tip (open same cell for the opponent, pass this randomCell data to server)
+    socket.emit(EVENTS.CELL.TIPED.CLIENT, {
+      id,
+      cells: getEmptyCells(gameData).length - 1,
+    });
   };
 
   useEffect(() => {
@@ -196,10 +218,36 @@ export const Game: FC<Props> = ({ status, data }) => {
     });
   }, []);
 
+  useEffect(() => {
+    const onCellTipedServer = () => {
+      openRandomCell({ data: gameData, changeSelect: false, highlighted: true });
+
+      socket.emit(EVENTS.CELL.OPENED, {
+        id,
+        cells: getEmptyCells(gameData).length - 1,
+      });
+    };
+
+    socket.on(EVENTS.CELL.TIPED.SERVER, onCellTipedServer);
+
+    return () => {
+      socket.off(EVENTS.CELL.TIPED.SERVER, onCellTipedServer);
+    };
+  }, [gameData, id, openRandomCell]);
+
+  const handleSelectCell = (data: SelectedCell) => {
+    onSelectCell(data);
+    const { cell, updateCell } = currents(data);
+
+    if (cell.highlighted) {
+      updateCell({ highlighted: false });
+    }
+  };
+
   return (
-    <GameContext.Provider value={{ selected, onSelectCell }}>
+    <GameContext.Provider value={{ selected, onSelectCell: handleSelectCell }}>
       <Root>
-        <ProgressBar value={progress} />
+        <ProgressBar value={progress} position="top" />
 
         <Field>
           <Board isLoading={status === GameStatus.Prepare} data={gameData} />
@@ -238,6 +286,8 @@ export const Game: FC<Props> = ({ status, data }) => {
             </Num>
           ))}
         </Numbers>
+
+        <ProgressBar value={progress} position="bottom" />
       </Root>
     </GameContext.Provider>
   );

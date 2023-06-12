@@ -29,6 +29,7 @@ interface RootProps {
   $isHighlighted: boolean;
   $isActive: boolean;
   $isError: boolean;
+  $isGift: boolean;
 }
 
 export const Root = styled("div")<RootProps>`
@@ -63,15 +64,24 @@ export const Root = styled("div")<RootProps>`
     }
   }
 
+  ${({ $isGift }) =>
+    $isGift &&
+    css`
+      color: green;
+      background: #c9f4c9;
+    `}
+
   ${({ $isHighlighted }) =>
     $isHighlighted &&
     css`
+      color: black;
       background: var(--select-axis);
     `}
 
   ${({ $isActive }) =>
     $isActive &&
     css`
+      color: black;
       background: var(--select-number);
     `}
 
@@ -79,6 +89,7 @@ export const Root = styled("div")<RootProps>`
   ${({ $isSelected }) =>
     $isSelected &&
     css`
+      color: black;
       background: var(--select-cell);
     `}
 

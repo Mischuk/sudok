@@ -23,6 +23,7 @@ export const Row: FC<Props> = ({ rowIndex, cells = [] }) => {
               value={cell.value}
               notes={cell.notes}
               error={cell.error}
+              highlighted={cell.highlighted}
             />
           );
         })}
