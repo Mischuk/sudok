@@ -51,7 +51,16 @@ export const Root = styled("div")<RootProps>`
   }
   &:nth-child(3),
   &:nth-child(6) {
-    border-right: 2px solid black;
+    &:after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: -2px;
+      width: 2px;
+      height: calc(100% + 4px);
+      background-color: black;
+      z-index: 1;
+    }
   }
 
   ${({ $isHighlighted }) =>

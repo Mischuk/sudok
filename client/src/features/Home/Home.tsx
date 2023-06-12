@@ -30,7 +30,7 @@ const Home = () => {
   return (
     <HomeContext.Provider value={{ players }}>
       <Root>
-        {isWaiting && <Waiting>Waiting for the second player...</Waiting>}
+        {isWaiting && !isProcess && <Waiting>Waiting for the second player...</Waiting>}
 
         {isDiffing && <Difficults />}
 

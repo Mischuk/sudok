@@ -8,10 +8,10 @@ import { Control } from "../../components/Control/Control";
 import { GameContext, SelectedCell } from "./Game.context";
 import { GameCell, GameRow, INITIAL_CELL } from "../Home/Home.hooks";
 import { deepCopy, getRandomInt, toggleNum } from "./Game.utils";
-import { ReactComponent as IconBack } from "../../assets/icons/back.svg";
-import { ReactComponent as IconErase } from "../../assets/icons/erase.svg";
-import { ReactComponent as IconNote } from "../../assets/icons/note.svg";
-import { ReactComponent as IconTip } from "../../assets/icons/tip.svg";
+import IconBack from "../../assets/icons/back.svg";
+import IconErase from "../../assets/icons/erase.svg";
+import IconNote from "../../assets/icons/note.svg";
+import IconTip from "../../assets/icons/tip.svg";
 
 interface Props {
   status: GameStatus;
@@ -190,17 +190,17 @@ export const Game: FC<Props> = ({ status, data }) => {
         <Controls>
           <FieldActions>
             <Control onClick={onBackward} disabled={!history.length}>
-              <IconBack />
+              <img src={IconBack} alt="bck" />
             </Control>
             <Control onClick={onClearCell}>
-              <IconErase />
+              <img src={IconErase} alt="rmv" />
             </Control>
             <Control
               isActive={isNotes}
               label={isNotes ? "ON" : "OFF"}
               onClick={() => setIsNotes(!isNotes)}
             >
-              <IconNote />
+              <img src={IconNote} alt="edit" />
             </Control>
             <Control
               label={`${tips}`}
@@ -208,7 +208,7 @@ export const Game: FC<Props> = ({ status, data }) => {
               styles={{ border: "none" }}
               onClick={onTip}
             >
-              <IconTip />
+              <img src={IconTip} alt="tip" />
             </Control>
           </FieldActions>
         </Controls>
