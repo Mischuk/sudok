@@ -1,4 +1,4 @@
-import { LandscapeLocker, Root } from "./App.styles";
+import { Root } from "./App.styles";
 import { QueryClientProvider } from "react-query";
 import { queryClient } from "../../api/instances";
 import { AuthProvider } from "../../features/Auth/Auth.context";
@@ -12,7 +12,6 @@ function App() {
         <BrowserRouter>
           <Root>
             <RoutesContainer />
-            <LandscapeLocker />
           </Root>
         </BrowserRouter>
       </AuthProvider>

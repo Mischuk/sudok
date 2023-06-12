@@ -1,35 +1,47 @@
 import { useAuthContext } from "./hooks/useAuthContext";
 import { useNavigate } from "react-router-dom";
-import { Routes } from "../../utils/enum";
 import { abortController } from "../../utils/abortController";
 import { api } from "../../api/instances";
 import { useQuery } from "react-query";
 import { DTO_Player } from "utils";
+import { LS } from "./Auth.conts";
+import { Routes } from "../../utils/enum";
+import { useCallback, useEffect } from "react";
 
 let controller: AbortController;
 
 const Auth = () => {
-  let navigate = useNavigate();
-  const { signIn, user } = useAuthContext();
+  const userId = localStorage.getItem(LS.userId);
 
+  let navigate = useNavigate();
+  const navigateHome = useCallback(
+    () => navigate(Routes.Home, { replace: true }),
+    [navigate]
+  );
+
+  const { signIn, signUp } = useAuthContext();
   const { isError } = useQuery(
     ["auth"],
     async (): Promise<DTO_Player> => {
       controller = abortController(controller);
 
-      const response = await api.get<DTO_Player>("/auth");
+      const response = await api.get<DTO_Player>("/auth/signup");
       return response.data;
     },
     {
-      enabled: !user,
+      enabled: !userId,
       retry: true,
-      onSuccess: ({ charCode, id }) => {
-        signIn({ charCode, id }, () => {
-          navigate(Routes.Home, { replace: true });
-        });
+      onSuccess: ({ id }) => {
+        signUp({ id }, navigateHome);
       },
     }
   );
+
+  useEffect(() => {
+    if (userId) {
+      signIn({ id: userId }, navigateHome);
+    }
+  }, [navigateHome, signIn, userId]);
 
   return (
     <div>

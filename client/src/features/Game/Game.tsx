@@ -12,6 +12,8 @@ import IconBack from "../../assets/icons/back.svg";
 import IconErase from "../../assets/icons/erase.svg";
 import IconNote from "../../assets/icons/note.svg";
 import IconTip from "../../assets/icons/tip.svg";
+import { socket } from "../../api/instances";
+import { EVENTS } from "utils";
 
 interface Props {
   status: GameStatus;
@@ -121,6 +123,11 @@ export const Game: FC<Props> = ({ status, data }) => {
         // TODO: ws event on mistake (open random cell for the opponent)
       } else {
         // TODO: ws event on success (re-calc progressbar)
+        socket.emit(EVENTS.CELL.OPENED, {
+          value: num,
+          col: selected.position.col,
+          row: selected.position.row,
+        });
       }
     }
   };

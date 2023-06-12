@@ -5,7 +5,7 @@ import { ErrorResponse } from "../../../utils/types";
 
 let controller: AbortController;
 
-type AuthArgs = { charCode: string };
+type AuthArgs = { id: string };
 
 const auth = async (): Promise<any> => {
   controller = abortController(controller);

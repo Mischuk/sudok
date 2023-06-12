@@ -11,10 +11,7 @@ function getRandomInt(min: number, max: number) {
 }
 
 const DTO_Players = (players: ServerClient[]): DTO_Player[] =>
-  players.map(({ id, charCode }) => ({
-    id,
-    charCode,
-  }));
+  players.map(({ id }) => ({ id }));
 
 const getPuzzlesFromFile = async (filename: string) => {
   const data = await readFile(`${filename}.json`);

@@ -27,5 +27,9 @@ exports.EVENTS = {
         PREPARE: {
             SERVER: "S_GAME_PREPARE",
         },
+        UPDATE_PROGRESS: "GAME_UPDATE_PROGRESS",
+    },
+    CELL: {
+        OPENED: "CELL_OPENED",
     },
 };

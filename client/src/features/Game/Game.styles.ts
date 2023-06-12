@@ -17,6 +17,7 @@ export const Numbers = styled("div")`
 
 export const Field = styled("div")`
   padding: 10px;
+  max-width: 500px;
 `;
 
 export const Controls = styled("div")`

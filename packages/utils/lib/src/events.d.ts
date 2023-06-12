@@ -24,5 +24,9 @@ export declare const EVENTS: {
         PREPARE: {
             SERVER: string;
         };
+        UPDATE_PROGRESS: string;
+    };
+    CELL: {
+        OPENED: string;
     };
 };

@@ -30,14 +30,13 @@ async function start() {
     httpServer.listen(PORT);
 
     io.on(EVENTS.COMMON.CONNECTION, (socket) => {
-      socket.on(EVENTS.PLAYER.CONNECT.CLIENT, async (data: { id: string; charCode: number }) => {
+      socket.on(EVENTS.PLAYER.CONNECT.CLIENT, async (data: { id: string }) => {
         const user = clients.find(({ id }) => id === data.id);
 
         if (!user) {
           clients.push({
             id: data.id,
             socketId: socket.id,
-            charCode: data.charCode,
           });
         }
 
@@ -60,8 +59,18 @@ async function start() {
         io.emit(EVENTS.GAME.PREPARE.SERVER);
         const data = await getRandomPuzzle(diff);
 
-        io.emit(EVENTS.GAME.START.SERVER, { puzzle: data.puzzle, solution: data.solution });
+        io.emit(EVENTS.GAME.START.SERVER, {
+          puzzle: data.puzzle,
+          solution: data.solution,
+        });
       });
+
+      socket.on(
+        EVENTS.CELL.OPENED,
+        async ({ col, row, value }: { col: number; row: number; value: number }) => {
+          io.emit(EVENTS.GAME.UPDATE_PROGRESS, {});
+        }
+      );
     });
   } catch (e) {
     console.error(e);

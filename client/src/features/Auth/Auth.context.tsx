@@ -1,38 +1,48 @@
-import { createContext, useState } from "react";
+import { createContext, useCallback, useState } from "react";
 import { socket } from "../../api/instances";
 import { DTO_Player, EVENTS } from "utils";
+import { LS } from "./Auth.conts";
 
 interface AuthContextType {
-  user: number;
+  id: string;
   isAuth: boolean;
   signIn: (data: DTO_Player, callback?: VoidFunction) => void;
+  signUp: (data: DTO_Player, callback?: VoidFunction) => void;
   signOut: (callback?: VoidFunction) => void;
 }
 
 const AuthContext = createContext<AuthContextType>(null!);
-const INIT_USER_DATA: { user: number; isAuth: boolean } = { user: null!, isAuth: false };
+const INIT_USER_DATA: { id: string; isAuth: boolean } = { id: "", isAuth: false };
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [{ user, isAuth }, setUser] = useState(INIT_USER_DATA);
+  const [{ id, isAuth }, setUser] = useState(INIT_USER_DATA);
 
-  const signIn = ({ charCode, id }: DTO_Player, callback = () => {}) => {
-    setUser({ user: charCode, isAuth: true });
+  const signIn = useCallback(({ id }: DTO_Player, callback = () => {}) => {
+    setUser({ id, isAuth: true });
 
-    socket.emit(EVENTS.PLAYER.CONNECT.CLIENT, { id, charCode });
-
+    socket.emit(EVENTS.PLAYER.CONNECT.CLIENT, { id });
     callback();
-  };
+  }, []);
 
-  const signOut = (callback = () => {}) => {
+  const signUp = useCallback(
+    ({ id }: DTO_Player, callback = () => {}) => {
+      localStorage.setItem(LS.userId, id);
+      signIn({ id }, callback);
+    },
+    [signIn]
+  );
+
+  const signOut = useCallback((callback = () => {}) => {
     setUser(INIT_USER_DATA);
     callback();
-  };
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         isAuth,
-        user,
+        id,
+        signUp,
         signIn,
         signOut,
       }}
