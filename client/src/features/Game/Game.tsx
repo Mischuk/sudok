@@ -7,7 +7,7 @@ import { Board } from "../../components/Board/Board";
 import { Control } from "../../components/Control/Control";
 import { GameContext, SelectedCell } from "./Game.context";
 import { GameCell, GameRow, INITIAL_CELL } from "../Home/Home.hooks";
-import { deepCopy, toggleNum } from "./Game.utils";
+import { deepCopy, getRandomInt, toggleNum } from "./Game.utils";
 import { ReactComponent as IconBack } from "../../assets/icons/back.svg";
 import { ReactComponent as IconErase } from "../../assets/icons/erase.svg";
 import { ReactComponent as IconNote } from "../../assets/icons/note.svg";
@@ -22,13 +22,56 @@ const INITIAL_SELECTED = {
   value: null,
 };
 
+const MAX_TIPS = 3;
+interface RandomItem {
+  row: number;
+  col: number;
+  answer: number;
+}
+const getRandomEmptyCell = (data: GameRow[]) => {
+  const rows = deepCopy<GameRow[]>(data);
+
+  const emptyCells = rows.reduce<RandomItem[]>((prev, row, rowIndex) => {
+    const cells = row.cells
+      .map((cell, cellIndex) => {
+        if (cell.value === null) {
+          return {
+            row: rowIndex,
+            col: cellIndex,
+            answer: cell.answer,
+          };
+        } else {
+          return undefined;
+        }
+      })
+      .filter((cell) => cell) as RandomItem[];
+    return [...prev, ...cells];
+  }, []);
+
+  const randomIndex = getRandomInt(0, emptyCells.length - 1);
+
+  return emptyCells[randomIndex];
+};
+interface History {
+  selected: SelectedCell;
+  data: GameRow[];
+}
+
 export const Game: FC<Props> = ({ status, data }) => {
   const [isNotes, setIsNotes] = useState(false);
   const [selected, onSelectCell] = useState<SelectedCell>(INITIAL_SELECTED);
   const [gameData, setGameData] = useState<GameRow[]>([]);
-  const [history, setHistory] = useState<GameRow[][]>([]);
+  const [history, setHistory] = useState<History[]>([]);
+  const [tips, setTips] = useState(MAX_TIPS);
 
-  const pushToHistory = () => setHistory((p) => [...p, deepCopy<GameRow[]>(gameData)]);
+  const pushToHistory = () =>
+    setHistory((p) => [
+      ...p,
+      {
+        selected,
+        data: deepCopy<GameRow[]>(gameData),
+      },
+    ]);
 
   const currents = () => {
     const { position } = selected;
@@ -53,9 +96,7 @@ export const Game: FC<Props> = ({ status, data }) => {
   };
 
   const onClickNum = (num: CellNotes) => {
-    const { position, value } = selected;
-
-    if (!position || value) return;
+    if (!selected.position || selected.value) return;
 
     const { cell, updateCell } = currents();
 
@@ -86,16 +127,51 @@ export const Game: FC<Props> = ({ status, data }) => {
 
   const onBackward = () => {
     if (!history.length) return;
-    setGameData(history[history.length - 1]);
+    const { data, selected } = history[history.length - 1];
+    setGameData(data);
     setHistory((prev) => prev.slice(0, -1));
+    onSelectCell(selected);
   };
 
   const onClearCell = () => {
-    const { position } = selected;
+    if (!selected.position) return;
 
-    if (!position) return;
     const { updateCell } = currents();
     updateCell({ value: null, notes: [], error: false });
+    onSelectCell((prev) => ({
+      ...prev,
+      value: null,
+    }));
+  };
+
+  const onTip = () => {
+    if (!tips) return;
+
+    const rows = deepCopy<GameRow[]>(gameData);
+
+    const randomCell = getRandomEmptyCell(gameData);
+    const cell = rows[randomCell.row].cells[randomCell.col];
+
+    pushToHistory();
+
+    rows[randomCell.row].cells[randomCell.col] = {
+      ...cell,
+      value: randomCell.answer,
+      notes: [],
+      error: false,
+    };
+
+    setTips(tips - 1);
+    setGameData([...rows]);
+    onSelectCell({
+      value: randomCell.answer,
+      position: {
+        col: randomCell.col,
+        row: randomCell.row,
+      },
+    });
+
+    // TODO:  ws event on tip (open same cell for the opponent, pass this randomCell data to server)
   };
 
   useEffect(() => {
@@ -126,7 +202,12 @@ export const Game: FC<Props> = ({ status, data }) => {
             >
               <IconNote />
             </Control>
-            <Control label="3" isActive={!!3} styles={{ border: "none" }}>
+            <Control
+              label={`${tips}`}
+              isActive={!!tips}
+              styles={{ border: "none" }}
+              onClick={onTip}
+            >
               <IconTip />
             </Control>
           </FieldActions>
