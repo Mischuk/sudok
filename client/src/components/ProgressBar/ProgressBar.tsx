@@ -1,9 +1,14 @@
+import { FC } from "react";
 import { Bar, Root } from "./ProgressBar.styles";
 
-export const ProgressBar = () => {
+interface Props {
+  value: number;
+}
+
+export const ProgressBar: FC<Props> = ({ value }) => {
   return (
     <Root>
-      <Bar style={{ transform: `translateX(50%)` }} />
+      <Bar style={{ transform: `translateX(${value}%)` }} />
     </Root>
   );
 };

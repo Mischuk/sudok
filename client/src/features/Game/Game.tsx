@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
 import { CellNotes, GameStatus } from "../Home/Home.types";
 import { Field, FieldActions, Controls, Numbers, Root } from "./Game.styles";
 import { ProgressBar } from "../../components/ProgressBar/ProgressBar";
@@ -14,6 +14,7 @@ import IconNote from "../../assets/icons/note.svg";
 import IconTip from "../../assets/icons/tip.svg";
 import { socket } from "../../api/instances";
 import { EVENTS } from "utils";
+import { AuthContext } from "../Auth/Auth.context";
 
 interface Props {
   status: GameStatus;
@@ -30,10 +31,9 @@ interface RandomItem {
   col: number;
   answer: number;
 }
-const getRandomEmptyCell = (data: GameRow[]) => {
-  const rows = deepCopy<GameRow[]>(data);
 
-  const emptyCells = rows.reduce<RandomItem[]>((prev, row, rowIndex) => {
+const getEmptyCells = (rows: GameRow[]) => {
+  return rows.reduce<RandomItem[]>((prev, row, rowIndex) => {
     const cells = row.cells
       .map((cell, cellIndex) => {
         if (cell.value === null) {
@@ -49,22 +49,28 @@ const getRandomEmptyCell = (data: GameRow[]) => {
       .filter((cell) => cell) as RandomItem[];
     return [...prev, ...cells];
   }, []);
+};
 
+const getRandomEmptyCell = (data: GameRow[]) => {
+  const rows = deepCopy<GameRow[]>(data);
+  const emptyCells = getEmptyCells(rows);
   const randomIndex = getRandomInt(0, emptyCells.length - 1);
-
   return emptyCells[randomIndex];
 };
+
 interface History {
   selected: SelectedCell;
   data: GameRow[];
 }
 
 export const Game: FC<Props> = ({ status, data }) => {
+  const { id } = useContext(AuthContext);
   const [isNotes, setIsNotes] = useState(false);
   const [selected, onSelectCell] = useState<SelectedCell>(INITIAL_SELECTED);
   const [gameData, setGameData] = useState<GameRow[]>([]);
   const [history, setHistory] = useState<History[]>([]);
   const [tips, setTips] = useState(MAX_TIPS);
+  const [progress, setProgress] = useState(50);
 
   const pushToHistory = () =>
     setHistory((p) => [
@@ -124,9 +130,8 @@ export const Game: FC<Props> = ({ status, data }) => {
       } else {
         // TODO: ws event on success (re-calc progressbar)
         socket.emit(EVENTS.CELL.OPENED, {
-          value: num,
-          col: selected.position.col,
-          row: selected.position.row,
+          id,
+          cells: getEmptyCells(gameData).length - 1,
         });
       }
     }
@@ -185,10 +190,16 @@ export const Game: FC<Props> = ({ status, data }) => {
     setGameData(data);
   }, [data]);
 
+  useEffect(() => {
+    socket.on(EVENTS.GAME.UPDATE_PROGRESS, (progress: number) => {
+      setProgress(progress);
+    });
+  }, []);
+
   return (
     <GameContext.Provider value={{ selected, onSelectCell }}>
       <Root>
-        <ProgressBar />
+        <ProgressBar value={progress} />
 
         <Field>
           <Board isLoading={status === GameStatus.Prepare} data={gameData} />

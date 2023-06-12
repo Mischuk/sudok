@@ -27,6 +27,8 @@ async function start() {
   try {
     const clients: ServerClient[] = [];
 
+    let game: any = {};
+
     httpServer.listen(PORT);
 
     io.on(EVENTS.COMMON.CONNECTION, (socket) => {
@@ -63,12 +65,33 @@ async function start() {
           puzzle: data.puzzle,
           solution: data.solution,
         });
+
+        const closedCells = data.puzzle.split("").filter((item) => item === ".").length;
+
+        game[clients[0].id] = closedCells;
+        game[clients[1].id] = closedCells;
       });
 
       socket.on(
         EVENTS.CELL.OPENED,
-        async ({ col, row, value }: { col: number; row: number; value: number }) => {
-          io.emit(EVENTS.GAME.UPDATE_PROGRESS, {});
+        async ({ id, cells }: { id: string; cells: number }) => {
+          const secondPlayer = clients.find((c) => c.id !== id);
+          if (!secondPlayer) return;
+
+          game[id] = cells;
+
+          const total = game[clients[0].id] + game[clients[1].id];
+          const p = total / 100;
+          const num = cells / p;
+          const cur = Math.round(num * 100) / 100;
+          const res = {
+            [id]: 100 - cur,
+            [secondPlayer.id]: cur,
+          };
+
+          clients.forEach((c) => {
+            io.to(c.socketId).emit(EVENTS.GAME.UPDATE_PROGRESS, res[c.id]);
+          });
         }
       );
     });
