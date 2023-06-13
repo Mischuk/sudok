@@ -4,9 +4,9 @@ import { abortController } from "../../utils/abortController";
 import { api } from "../../api/instances";
 import { useQuery } from "react-query";
 import { DTO_Player } from "utils";
-import { LS } from "./Auth.conts";
 import { Routes } from "../../utils/enum";
 import { useCallback, useEffect } from "react";
+import { LS } from "../../utils/consts";
 
 let controller: AbortController;
 
@@ -20,6 +20,7 @@ const Auth = () => {
   );
 
   const { signIn, signUp } = useAuthContext();
+
   const { isError } = useQuery(
     ["auth"],
     async (): Promise<DTO_Player> => {
@@ -31,9 +32,7 @@ const Auth = () => {
     {
       enabled: !userId,
       retry: true,
-      onSuccess: ({ id }) => {
-        signUp({ id }, navigateHome);
-      },
+      onSuccess: ({ id }) => signUp({ id }, navigateHome),
     }
   );
 

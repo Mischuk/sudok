@@ -1,15 +1,5 @@
 import { createContext } from "react";
-import { CellValue } from "../../utils/types";
-
-export interface CellCoordinates {
-  row: number;
-  col: number;
-}
-
-export interface SelectedCell {
-  position: CellCoordinates | null;
-  value: CellValue;
-}
+import { SelectedCell } from "./Game.types";
 
 interface I_GameContext {
   selected: SelectedCell;

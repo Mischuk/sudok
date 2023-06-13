@@ -1,15 +1,35 @@
-import { CellNotes } from "../Home/Home.types";
+import { deepCopy, getRandomInt } from "../../utils";
+import { GameRow } from "../../utils/types";
+import { RandomItem } from "./Game.types";
 
-export const toggleNum = (arr: CellNotes[], item: CellNotes) =>
-  arr.includes(item) ? arr.filter((i) => i !== item) : [...arr, item];
+export const getVoidCells = (data: GameRow[]) => {
+  const rows = deepCopy<GameRow[]>(data);
 
-export const deepCopy = <T>(obj: Object): T => JSON.parse(JSON.stringify(obj));
+  const voidCells = rows.reduce<RandomItem[]>((prev, row, rowIndex) => {
+    const cells = row.cells
+      .map((cell, cellIndex) => {
+        if (cell.value === null) {
+          return {
+            row: rowIndex,
+            col: cellIndex,
+            answer: cell.answer,
+          };
+        } else {
+          return undefined;
+        }
+      })
+      .filter((cell) => cell) as RandomItem[];
+    return [...prev, ...cells];
+  }, []);
 
-export const deepCompare = (obj1: Object, obj2: Object) =>
-  JSON.stringify(obj1) === JSON.stringify(obj2);
+  return {
+    voidCells,
+    voidCellsTotal: voidCells.length,
+  };
+};
 
-export function getRandomInt(min: number, max: number) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+export const getRandomVoidCell = (data: GameRow[]) => {
+  const { voidCells, voidCellsTotal } = getVoidCells(data);
+  const randomIndex = getRandomInt(0, voidCellsTotal - 1);
+  return voidCells[randomIndex];
+};

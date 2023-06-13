@@ -1,5 +1,4 @@
-import { CellValue } from "../../utils/types";
-import { GameRow } from "./Home.hooks";
+import { CellValue, GameRow } from "../../utils/types";
 
 export enum GameStatus {
   Init = "Init",
@@ -18,4 +17,4 @@ export interface Game {
   data: GameRow[];
 }
 
-export type CellNotes = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+export type ChunkRange = [number, number];

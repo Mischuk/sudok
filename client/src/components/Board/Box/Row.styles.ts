@@ -1,8 +1,9 @@
 import { css, styled } from "styled-components";
+import { MAX_NUM } from "../../../utils/consts";
 
 export const Root = styled("div")<{ $isSelected: boolean }>`
   width: 100%;
-  height: calc(100% / 9);
+  height: calc(100% / ${MAX_NUM});
   position: relative;
 
   ${(props) =>

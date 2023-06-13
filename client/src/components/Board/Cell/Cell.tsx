@@ -1,9 +1,9 @@
 import { FC, useContext } from "react";
 import { NumNote, Root } from "./Cell.styles";
-import { CellCoordinates, GameContext } from "../../../features/Game/Game.context";
-import { CellValue } from "../../../utils/types";
+import { GameContext } from "../../../features/Game/Game.context";
+import { CellNotes, CellValue } from "../../../utils/types";
 import { NUM_NOTE_POSITION } from "./Cell.consts";
-import { CellNotes } from "../../../features/Home/Home.types";
+import { CellCoordinates } from "../../../features/Game/Game.types";
 
 interface Props {
   position: CellCoordinates;

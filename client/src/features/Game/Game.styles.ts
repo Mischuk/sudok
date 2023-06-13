@@ -7,6 +7,9 @@ export const Root = styled("div")`
   padding-bottom: 10px;
   display: flex;
   flex-direction: column;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 export const Numbers = styled("div")`

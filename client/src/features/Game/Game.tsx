@@ -1,65 +1,24 @@
 import { FC, useCallback, useContext, useEffect, useState } from "react";
-import { CellNotes, GameStatus } from "../Home/Home.types";
-import { Field, FieldActions, Controls, Numbers, Root } from "./Game.styles";
+import { GameStatus } from "../Home/Home.types";
+import { Field, FieldActions, Controls, Root } from "./Game.styles";
 import { ProgressBar } from "../../components/ProgressBar/ProgressBar";
-import { Num } from "../../components/Num/Num";
 import { Board } from "../../components/Board/Board";
 import { Control } from "../../components/Control/Control";
-import { GameContext, SelectedCell } from "./Game.context";
-import { GameCell, GameRow, INITIAL_CELL } from "../Home/Home.hooks";
-import { deepCopy, getRandomInt, toggleNum } from "./Game.utils";
-import IconBack from "../../assets/icons/back.svg";
-import IconErase from "../../assets/icons/erase.svg";
-import IconNote from "../../assets/icons/note.svg";
-import IconTip from "../../assets/icons/tip.svg";
+import { GameContext } from "./Game.context";
 import { socket } from "../../api/instances";
 import { EVENTS } from "utils";
 import { AuthContext } from "../Auth/Auth.context";
+import { CONFIG, INITIAL_SELECTED } from "./Game.consts";
+import { SelectedCell } from "./Game.types";
+import { deepCopy, toggleNum } from "../../utils";
+import { INITIAL_CELL } from "../../utils/consts";
+import { GameRow, GameCell, CellNotes } from "../../utils/types";
+import { getVoidCells, getRandomVoidCell } from "./Game.utils";
+import { InputNumbers } from "./InputNumbers/InputNumbers";
+import { useHistory } from "./Game.hooks";
 
 interface Props {
   status: GameStatus;
-  data: GameRow[];
-}
-const INITIAL_SELECTED = {
-  position: null,
-  value: null,
-};
-
-const MAX_TIPS = 3;
-interface RandomItem {
-  row: number;
-  col: number;
-  answer: number;
-}
-
-const getEmptyCells = (rows: GameRow[]) => {
-  return rows.reduce<RandomItem[]>((prev, row, rowIndex) => {
-    const cells = row.cells
-      .map((cell, cellIndex) => {
-        if (cell.value === null) {
-          return {
-            row: rowIndex,
-            col: cellIndex,
-            answer: cell.answer,
-          };
-        } else {
-          return undefined;
-        }
-      })
-      .filter((cell) => cell) as RandomItem[];
-    return [...prev, ...cells];
-  }, []);
-};
-
-const getRandomEmptyCell = (data: GameRow[]) => {
-  const rows = deepCopy<GameRow[]>(data);
-  const emptyCells = getEmptyCells(rows);
-  const randomIndex = getRandomInt(0, emptyCells.length - 1);
-  return emptyCells[randomIndex];
-};
-
-interface History {
-  selected: SelectedCell;
   data: GameRow[];
 }
 
@@ -68,24 +27,14 @@ export const Game: FC<Props> = ({ status, data }) => {
   const [isNotes, setIsNotes] = useState(false);
   const [selected, onSelectCell] = useState<SelectedCell>(INITIAL_SELECTED);
   const [gameData, setGameData] = useState<GameRow[]>([]);
-  const [history, setHistory] = useState<History[]>([]);
-  const [tips, setTips] = useState(MAX_TIPS);
+  const history = useHistory({ gameData, selected });
+  const [tips, setTips] = useState(CONFIG.MAX_TIPS);
   const [progress, setProgress] = useState(50);
 
-  const pushToHistory = useCallback(
-    () =>
-      setHistory((p) => [
-        ...p,
-        {
-          selected,
-          data: deepCopy<GameRow[]>(gameData),
-        },
-      ]),
-    [gameData, selected]
-  );
+  const { voidCellsTotal } = getVoidCells(gameData);
 
-  const currents = (nextSelected?: SelectedCell) => {
-    const { position } = nextSelected || selected;
+  const currents = (selected: SelectedCell) => {
+    const { position } = selected;
     if (!position)
       return { cell: INITIAL_CELL, updateCell: (_: Partial<GameCell>) => {} };
 
@@ -93,7 +42,7 @@ export const Game: FC<Props> = ({ status, data }) => {
     const cell = rows[position.row].cells[position.col];
 
     const updateCell = (nextCell: Partial<GameCell>) => {
-      pushToHistory();
+      history.push();
 
       rows[position.row].cells[position.col] = {
         ...cell,
@@ -109,7 +58,7 @@ export const Game: FC<Props> = ({ status, data }) => {
   const onClickNum = (num: CellNotes) => {
     if (!selected.position || selected.value) return;
 
-    const { cell, updateCell } = currents();
+    const { cell, updateCell } = currents(selected);
 
     if (isNotes) {
       updateCell({ notes: [...toggleNum(cell.notes, num)] });
@@ -129,28 +78,32 @@ export const Game: FC<Props> = ({ status, data }) => {
       }));
 
       if (error) {
-        // TODO: ws event on mistake (open random cell for the opponent)
+        socket.emit(EVENTS.CELL.TIPED.CLIENT, {
+          id,
+          cells: voidCellsTotal,
+        });
       } else {
         socket.emit(EVENTS.CELL.OPENED, {
           id,
-          cells: getEmptyCells(gameData).length - 1,
+          cells: voidCellsTotal - 1,
         });
       }
     }
   };
 
   const onBackward = () => {
-    if (!history.length) return;
-    const { data, selected } = history[history.length - 1];
-    setGameData(data);
-    setHistory((prev) => prev.slice(0, -1));
-    onSelectCell(selected);
+    const prev = history.prev();
+
+    if (!prev) return;
+
+    setGameData(prev.data);
+    onSelectCell(prev.selected);
   };
 
   const onClearCell = () => {
     if (!selected.position) return;
 
-    const { updateCell } = currents();
+    const { updateCell } = currents(selected);
     updateCell({ value: null, notes: [], error: false });
     onSelectCell((prev) => ({
       ...prev,
@@ -169,10 +122,10 @@ export const Game: FC<Props> = ({ status, data }) => {
       highlighted: boolean;
     }) => {
       const rows = deepCopy<GameRow[]>(data);
-      const randomCell = getRandomEmptyCell(rows);
+      const randomCell = getRandomVoidCell(rows);
       const cell = rows[randomCell.row].cells[randomCell.col];
 
-      pushToHistory();
+      history.push();
 
       rows[randomCell.row].cells[randomCell.col] = {
         ...cell,
@@ -194,7 +147,7 @@ export const Game: FC<Props> = ({ status, data }) => {
         });
       }
     },
-    [pushToHistory]
+    [history]
   );
 
   const onTip = () => {
@@ -204,7 +157,7 @@ export const Game: FC<Props> = ({ status, data }) => {
 
     socket.emit(EVENTS.CELL.TIPED.CLIENT, {
       id,
-      cells: getEmptyCells(gameData).length - 1,
+      cells: voidCellsTotal - 1,
     });
   };
 
@@ -213,9 +166,12 @@ export const Game: FC<Props> = ({ status, data }) => {
   }, [data]);
 
   useEffect(() => {
-    socket.on(EVENTS.GAME.UPDATE_PROGRESS, (progress: number) => {
-      setProgress(progress);
-    });
+    const updateProgress = (progress: number) => setProgress(progress);
+    socket.on(EVENTS.GAME.UPDATE_PROGRESS, updateProgress);
+
+    return () => {
+      socket.off(EVENTS.GAME.UPDATE_PROGRESS, updateProgress);
+    };
   }, []);
 
   useEffect(() => {
@@ -224,7 +180,7 @@ export const Game: FC<Props> = ({ status, data }) => {
 
       socket.emit(EVENTS.CELL.OPENED, {
         id,
-        cells: getEmptyCells(gameData).length - 1,
+        cells: voidCellsTotal - 1,
       });
     };
 
@@ -233,12 +189,11 @@ export const Game: FC<Props> = ({ status, data }) => {
     return () => {
       socket.off(EVENTS.CELL.TIPED.SERVER, onCellTipedServer);
     };
-  }, [gameData, id, openRandomCell]);
+  }, [gameData, id, openRandomCell, voidCellsTotal]);
 
-  const handleSelectCell = (data: SelectedCell) => {
-    onSelectCell(data);
-    const { cell, updateCell } = currents(data);
-
+  const handleSelectCell = (nextSelectCell: SelectedCell) => {
+    onSelectCell(nextSelectCell);
+    const { cell, updateCell } = currents(nextSelectCell);
     if (cell.highlighted) {
       updateCell({ highlighted: false });
     }
@@ -255,37 +210,25 @@ export const Game: FC<Props> = ({ status, data }) => {
 
         <Controls>
           <FieldActions>
-            <Control onClick={onBackward} disabled={!history.length}>
-              <img src={IconBack} alt="bck" />
-            </Control>
-            <Control onClick={onClearCell}>
-              <img src={IconErase} alt="rmv" />
-            </Control>
+            <Control onClick={onBackward} icon="back" />
+            <Control onClick={onClearCell} icon="erase" />
             <Control
               isActive={isNotes}
               label={isNotes ? "ON" : "OFF"}
               onClick={() => setIsNotes(!isNotes)}
-            >
-              <img src={IconNote} alt="edit" />
-            </Control>
+              icon="note"
+            />
             <Control
               label={`${tips}`}
               isActive={!!tips}
               styles={{ border: "none" }}
               onClick={onTip}
-            >
-              <img src={IconTip} alt="tip" />
-            </Control>
+              icon="tip"
+            />
           </FieldActions>
         </Controls>
 
-        <Numbers>
-          {new Array(9).fill(null).map((_, index) => (
-            <Num key={`num${index}`} onClick={() => onClickNum((index + 1) as CellNotes)}>
-              {index + 1}
-            </Num>
-          ))}
-        </Numbers>
+        <InputNumbers onClick={(index) => onClickNum(index)} />
 
         <ProgressBar value={progress} position="bottom" />
       </Root>

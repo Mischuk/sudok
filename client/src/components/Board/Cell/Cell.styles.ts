@@ -1,4 +1,5 @@
-import { css, styled } from "styled-components";
+import styled, { css } from "styled-components";
+import { MAX_NUM } from "../../../utils/consts";
 
 interface NumNoteProps {
   $isActive: boolean;
@@ -33,7 +34,7 @@ interface RootProps {
 }
 
 export const Root = styled("div")<RootProps>`
-  width: calc(100% / 9);
+  width: calc(100% / ${MAX_NUM});
   height: 100%;
   display: flex;
   align-items: center;

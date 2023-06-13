@@ -1,7 +1,7 @@
 import { createContext, useCallback, useState } from "react";
 import { socket } from "../../api/instances";
 import { DTO_Player, EVENTS } from "utils";
-import { LS } from "./Auth.conts";
+import { LS } from "../../utils/consts";
 
 interface AuthContextType {
   id: string;

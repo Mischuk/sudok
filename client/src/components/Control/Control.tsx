@@ -1,5 +1,6 @@
 import { CSSProperties, FC, PropsWithChildren } from "react";
-import { Icon, Label, Root } from "./Control.styles";
+import { Icon as IconContainer, Label, Root } from "./Control.styles";
+import { Icon, IconFilename } from "../Icon/Icon";
 
 interface Props extends PropsWithChildren {
   onClick?: () => void;
@@ -7,6 +8,7 @@ interface Props extends PropsWithChildren {
   label?: string;
   isActive?: boolean;
   styles?: CSSProperties;
+  icon?: IconFilename;
 }
 
 export const Control: FC<Props> = ({
@@ -16,10 +18,15 @@ export const Control: FC<Props> = ({
   disabled = false,
   isActive = false,
   styles = {},
+  icon,
 }) => {
   return (
     <Root onClick={onClick} $isDisabled={disabled} $isActive={isActive} style={styles}>
-      <Icon>{children}</Icon>
+      {icon && (
+        <IconContainer>
+          <Icon name={icon} />
+        </IconContainer>
+      )}
       {label && <Label $isActive={isActive}>{label}</Label>}
     </Root>
   );

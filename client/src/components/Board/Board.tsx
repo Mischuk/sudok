@@ -2,7 +2,7 @@ import { FC, memo } from "react";
 import { Root, Rows } from "./Board.styles";
 import { Row } from "./Box/Row";
 import { Loader } from "../Loader/Loader";
-import { GameRow } from "../../features/Home/Home.hooks";
+import { GameRow } from "../../utils/types";
 
 interface Props {
   isLoading: boolean;
