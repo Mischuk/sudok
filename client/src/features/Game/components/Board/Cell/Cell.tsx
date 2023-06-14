@@ -1,9 +1,9 @@
 import { FC, useContext } from "react";
 import { NumNote, Root } from "./Cell.styles";
-import { GameContext } from "../../../features/Game/Game.context";
-import { CellNotes, CellValue } from "../../../utils/types";
+import { SelectContext } from "../../../Game.context";
+import { CellNotes, CellValue } from "../../../../../utils/types";
 import { NUM_NOTE_POSITION } from "./Cell.consts";
-import { CellCoordinates } from "../../../features/Game/Game.types";
+import { CellCoordinates } from "../../../Game.types";
 
 interface Props {
   position: CellCoordinates;
@@ -20,7 +20,7 @@ export const Cell: FC<Props> = ({
   notes,
   error,
 }) => {
-  const { onSelectCell, selected } = useContext(GameContext);
+  const { onSelectCell, selected } = useContext(SelectContext);
 
   const isSelected = row === selected.position?.row && col === selected.position?.col;
   const isHighlighted = col === selected.position?.col;

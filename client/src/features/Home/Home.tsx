@@ -37,11 +37,11 @@ const Home = () => {
   const isDiffing = isInitial && totalPlayers === MIN_PLAYERS;
 
   return (
-    <HomeContext.Provider value={{ players }}>
+    <HomeContext.Provider value={{ status, players }}>
       <Root>
         {isWaiting && !isProcess && <Waiting>Waiting for the second player...</Waiting>}
         {isDiffing && <Difficults />}
-        {isProcess && <Game status={status} data={data} />}
+        {isProcess && <Game initialData={data} />}
       </Root>
     </HomeContext.Provider>
   );

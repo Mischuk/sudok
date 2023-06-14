@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { styled } from "styled-components";
-import { CellNotes } from "../../../utils/types";
-import { MAX_NUM } from "../../../utils/consts";
-import { Num } from "../../../components/Num/Num";
+import { CellNotes } from "../../../../utils/types";
+import { MAX_NUM } from "../../../../utils/consts";
+import { Num } from "../../../../components/Num/Num";
 
 interface Props {
   onClick: (index: CellNotes) => void;

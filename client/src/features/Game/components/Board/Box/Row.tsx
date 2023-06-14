@@ -1,8 +1,8 @@
 import { FC, useContext } from "react";
 import { Cell } from "../Cell/Cell";
 import { Cells, Root } from "./Row.styles";
-import { GameContext } from "../../../features/Game/Game.context";
-import { GameCell } from "../../../utils/types";
+import { SelectContext } from "../../../Game.context";
+import { GameCell } from "../../../../../utils/types";
 
 interface Props {
   cells?: GameCell[];
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const Row: FC<Props> = ({ rowIndex, cells = [] }) => {
-  const { selected } = useContext(GameContext);
+  const { selected } = useContext(SelectContext);
 
   return (
     <Root $isSelected={selected.position?.row === rowIndex}>

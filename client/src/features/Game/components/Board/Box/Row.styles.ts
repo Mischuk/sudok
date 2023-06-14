@@ -1,5 +1,5 @@
 import { css, styled } from "styled-components";
-import { MAX_NUM } from "../../../utils/consts";
+import { MAX_NUM } from "../../../../../utils/consts";
 
 export const Root = styled("div")<{ $isSelected: boolean }>`
   width: 100%;

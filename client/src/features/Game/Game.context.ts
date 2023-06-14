@@ -1,15 +1,28 @@
 import { createContext } from "react";
 import { SelectedCell } from "./Game.types";
+import { GameRow } from "../../utils/types";
 
-interface I_GameContext {
+export interface SelectContextType {
   selected: SelectedCell;
   onSelectCell: (cell: SelectedCell) => void;
 }
 
-export const GameContext = createContext<I_GameContext>({
+export const SelectContext = createContext<SelectContextType>({
   selected: {
     position: null,
     value: null,
   },
   onSelectCell: () => {},
+});
+
+export interface DataContextType {
+  data: GameRow[];
+  updateData: (data: GameRow[]) => void;
+  voidCellsTotal: number;
+}
+
+export const DataContext = createContext<DataContextType>({
+  data: [],
+  updateData: () => {},
+  voidCellsTotal: 0,
 });

@@ -1,3 +1,5 @@
+import { INITIAL_CELL } from "../../utils/consts";
+import { GameCell } from "../../utils/types";
 import { SelectedCell } from "./Game.types";
 
 export const INITIAL_SELECTED: SelectedCell = {
@@ -8,3 +10,10 @@ export const INITIAL_SELECTED: SelectedCell = {
 export const CONFIG = {
   MAX_TIPS: 3,
 };
+
+export const VoidSelected = {
+  cell: INITIAL_CELL,
+  updateCell: (_: Partial<GameCell>) => {},
+};
+
+export const INITIAL_PROGRESS = 50;
