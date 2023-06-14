@@ -14,6 +14,7 @@ export const CONFIG = {
 export const VoidSelected = {
   cell: INITIAL_CELL,
   updateCell: (_: Partial<GameCell>) => {},
+  updateCellAxis: () => {},
 };
 
 export const INITIAL_PROGRESS = 50;

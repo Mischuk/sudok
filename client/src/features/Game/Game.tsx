@@ -1,12 +1,7 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import {
-  DataContext,
-  DataContextType,
-  SelectContext,
-  SelectContextType,
-} from "./Game.context";
+import { FC, useCallback, useEffect, useState } from "react";
+import { DataContext, HistoryContext, SelectContext } from "./Game.context";
 import { INITIAL_SELECTED } from "./Game.consts";
-import { SelectedCell } from "./Game.types";
+import { History, SelectedCell } from "./Game.types";
 import { deepCopy } from "../../utils";
 import { GameRow } from "../../utils/types";
 import { getVoidCells } from "./Game.utils";
@@ -20,6 +15,28 @@ export const Game: FC<Props> = ({ initialData }) => {
   const [selected, onSelectCell] = useState<SelectedCell>(INITIAL_SELECTED);
   const [data, setData] = useState<GameRow[]>([]);
   const { voidCellsTotal } = getVoidCells(data);
+  const [history, setHistory] = useState<History[]>([]);
+
+  const historyPush = useCallback(
+    () =>
+      setHistory((prev) => [
+        ...prev,
+        {
+          data: deepCopy<GameRow[]>(data),
+          selected: deepCopy<SelectedCell>(selected),
+        },
+      ]),
+    [data, selected]
+  );
+
+  const historyPrev = useCallback(() => {
+    if (!history.length) return;
+    const { data, selected } = history[history.length - 1];
+
+    setHistory((prev) => prev.slice(0, -1));
+    onSelectCell(selected);
+    setData(data);
+  }, [history]);
 
   const handleSelectCell = useCallback(
     (nextSelectCell: SelectedCell) => {
@@ -49,23 +66,20 @@ export const Game: FC<Props> = ({ initialData }) => {
     setData(initialData);
   }, [initialData]);
 
-  const ContextSelect: SelectContextType = useMemo(
-    () => ({ selected, onSelectCell: handleSelectCell }),
-    [handleSelectCell, selected]
-  );
-  const ContextData: DataContextType = useMemo(
-    () => ({
-      data,
-      updateData: setData,
-      voidCellsTotal,
-    }),
-    [data, voidCellsTotal]
-  );
-
   return (
-    <SelectContext.Provider value={ContextSelect}>
-      <DataContext.Provider value={ContextData}>
-        <GameRoot />
+    <SelectContext.Provider value={{ selected, onSelectCell: handleSelectCell }}>
+      <DataContext.Provider
+        value={{
+          data,
+          updateData: setData,
+          voidCellsTotal,
+        }}
+      >
+        <HistoryContext.Provider
+          value={{ push: historyPush, prev: historyPrev, history }}
+        >
+          <GameRoot />
+        </HistoryContext.Provider>
       </DataContext.Provider>
     </SelectContext.Provider>
   );

@@ -2,13 +2,12 @@ import { useContext } from "react";
 import { deepCopy } from "../../../../../utils";
 import { GameRow } from "../../../../../utils/types";
 import { getRandomVoidCell } from "../../../Game.utils";
-import { useHistory } from "./useHistory";
-import { DataContext, SelectContext } from "../../../Game.context";
+import { DataContext, HistoryContext, SelectContext } from "../../../Game.context";
 
 export const useRandomCell = () => {
   const { data, updateData } = useContext(DataContext);
   const { onSelectCell } = useContext(SelectContext);
-  const history = useHistory();
+  const history = useContext(HistoryContext);
 
   const open = ({
     highlighted,

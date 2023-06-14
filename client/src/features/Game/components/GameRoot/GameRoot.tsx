@@ -1,12 +1,11 @@
-import { memo, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { BoardField, Controls, Root } from "./GameRoot.styles";
 import { ProgressBar } from "../../../../components/ProgressBar/ProgressBar";
 import { useProgress } from "./hooks/useProgress";
 import { Board } from "../Board/Board";
-import { DataContext, SelectContext } from "../../Game.context";
+import { DataContext, HistoryContext, SelectContext } from "../../Game.context";
 import { Control } from "../../../../components/Control/Control";
 import { InputNumbers } from "../InputNumbers/InputNumbers";
-import { useHistory } from "./hooks/useHistory";
 import { useCurrents } from "./hooks/useCurrents";
 import { useTips } from "./hooks/useTips";
 import { useRandomCell } from "./hooks/useRandomCell";
@@ -16,17 +15,16 @@ import { AuthContext } from "../../../Auth/Auth.context";
 import { CellNotes } from "../../../../utils/types";
 import { toggleNum } from "../../../../utils";
 
-export const GameRoot = memo(() => {
+export const GameRoot = () => {
   const { id } = useContext(AuthContext);
   const { progress } = useProgress();
-  const history = useHistory();
+  const history = useContext(HistoryContext);
   const tips = useTips();
   const { selected, onSelectCell } = useContext(SelectContext);
   const { currents } = useCurrents();
   const randomCell = useRandomCell();
   const [isNotes, setIsNotes] = useState(false);
   const { voidCellsTotal } = useContext(DataContext);
-
   const onBackward = () => history.prev();
 
   const onClearCell = () => {
@@ -45,7 +43,7 @@ export const GameRoot = memo(() => {
   const onClickNum = (num: CellNotes) => {
     if (!selected.position || selected.value) return;
 
-    const { cell, updateCell } = currents(selected);
+    const { cell, updateCell, updateCellAxis } = currents(selected);
 
     if (isNotes) {
       updateCell({ notes: [...toggleNum(cell.notes, num)] });
@@ -54,9 +52,12 @@ export const GameRoot = memo(() => {
     if (!isNotes) {
       const error = cell.answer !== num;
 
-      updateCell({
+      updateCellAxis({
         value: num,
-        error,
+        nextCell: {
+          value: num,
+          error,
+        },
       });
 
       onSelectCell({ value: num, position: selected.position });
@@ -122,4 +123,4 @@ export const GameRoot = memo(() => {
       <InputNumbers onClick={(index) => onClickNum(index)} />
     </Root>
   );
-});
+};

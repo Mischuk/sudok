@@ -26,3 +26,15 @@ export const DataContext = createContext<DataContextType>({
   updateData: () => {},
   voidCellsTotal: 0,
 });
+
+export interface HistoryContextType {
+  prev: any;
+  push: any;
+  history: any;
+}
+
+export const HistoryContext = createContext<HistoryContextType>({
+  prev: () => {},
+  push: () => {},
+  history: [],
+});
