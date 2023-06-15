@@ -1,6 +1,6 @@
-import { styled } from "styled-components";
+import { css, styled } from "styled-components";
 
-export const Root = styled("div")`
+export const Root = styled("div")<{ $isVisible: boolean }>`
   min-width: 33%;
   position: relative;
   flex: 1;
@@ -8,9 +8,15 @@ export const Root = styled("div")`
   display: flex;
   align-items: center;
   justify-content: center;
+
+  ${({ $isVisible }) =>
+    $isVisible &&
+    css`
+      opacity: 0;
+    `}
 `;
 
-export const Value = styled("div")`
+export const Value = styled("div")<{ $isNotes: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,4 +31,10 @@ export const Value = styled("div")`
   &:active {
     background-color: var(--button-bg-active);
   }
+
+  ${({ $isNotes }) =>
+    $isNotes &&
+    css`
+      color: var(--button-color-notes);
+    `}
 `;

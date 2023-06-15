@@ -11,6 +11,7 @@ body {
   --button-bg: #dce3ed;
   --button-color: #0072e3;
   --button-bg-active: #c9cfd7;
+  --button-color-notes: #555;
 }
 
 *, &:after, *:before { box-sizing: border-box; }

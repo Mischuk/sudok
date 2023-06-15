@@ -120,7 +120,7 @@ export const GameRoot = () => {
         />
       </Controls>
 
-      <InputNumbers onClick={(index) => onClickNum(index)} />
+      <InputNumbers onClick={(index) => onClickNum(index)} isNotes={isNotes} />
     </Root>
   );
 };

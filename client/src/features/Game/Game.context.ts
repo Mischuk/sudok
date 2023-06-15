@@ -1,6 +1,6 @@
 import { createContext } from "react";
 import { SelectedCell } from "./Game.types";
-import { GameRow } from "../../utils/types";
+import { CellNotes, GameRow } from "../../utils/types";
 
 export interface SelectContextType {
   selected: SelectedCell;
@@ -19,12 +19,14 @@ export interface DataContextType {
   data: GameRow[];
   updateData: (data: GameRow[]) => void;
   voidCellsTotal: number;
+  completeNums: CellNotes[];
 }
 
 export const DataContext = createContext<DataContextType>({
   data: [],
   updateData: () => {},
   voidCellsTotal: 0,
+  completeNums: [],
 });
 
 export interface HistoryContextType {
