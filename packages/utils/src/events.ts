@@ -25,6 +25,7 @@ export const EVENTS = {
       SERVER: "S_GAME_PREPARE",
     },
     UPDATE_PROGRESS: "GAME_UPDATE_PROGRESS",
+    END: "GAME_END",
   },
   CELL: {
     OPENED: "CELL_OPENED",

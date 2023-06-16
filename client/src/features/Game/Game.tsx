@@ -4,7 +4,7 @@ import { INITIAL_SELECTED } from "./Game.consts";
 import { History, SelectedCell } from "./Game.types";
 import { deepCopy } from "../../utils";
 import { GameRow } from "../../utils/types";
-import { getNums, getVoidCells } from "./Game.utils";
+import { getNums, getTotalClosedCells } from "./Game.utils";
 import { GameRoot } from "./components/GameRoot/GameRoot";
 
 interface Props {
@@ -14,10 +14,9 @@ interface Props {
 export const Game: FC<Props> = ({ initialData }) => {
   const [selected, onSelectCell] = useState<SelectedCell>(INITIAL_SELECTED);
   const [data, setData] = useState<GameRow[]>([]);
-  const { voidCellsTotal } = getVoidCells(data);
+  const voidCellsTotal = getTotalClosedCells(data);
   const completeNums = getNums(data);
   const [history, setHistory] = useState<History[]>([]);
-
   const historyPush = useCallback(
     () =>
       setHistory((prev) => [

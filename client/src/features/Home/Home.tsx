@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Difficults } from "../../components/Difficults/Difficults";
 import { HomeContext } from "./Home.context";
 import { useGame, usePlayers } from "./Home.hooks";
@@ -8,10 +8,12 @@ import { GameStatus } from "./Home.types";
 import { Game } from "../Game/Game";
 import { EVENTS } from "utils";
 import { MIN_PLAYERS } from "../../utils/consts";
+import { MenuPopup } from "./MenuPopup/MenuPopup";
 
 const Home = () => {
   const { players, totalPlayers } = usePlayers();
   const { data, status, changeStatus, run } = useGame();
+  const [showEndMenu, setShowEndMenu] = useState(false);
 
   useEffect(() => {
     const prepare = () => changeStatus(GameStatus.Prepare);
@@ -31,6 +33,17 @@ const Home = () => {
     };
   }, [run]);
 
+  useEffect(() => {
+    const handleEndGame = () => {
+      setShowEndMenu(true);
+    };
+
+    socket.on(EVENTS.GAME.END, handleEndGame);
+    return () => {
+      socket.off(EVENTS.GAME.END, handleEndGame);
+    };
+  }, []);
+
   const isWaiting = totalPlayers !== MIN_PLAYERS && totalPlayers > 0;
   const isInitial = status === GameStatus.Init;
   const isProcess = status === GameStatus.Process || status === GameStatus.Prepare;
@@ -42,6 +55,7 @@ const Home = () => {
         {isWaiting && !isProcess && <Waiting>Waiting for the second player...</Waiting>}
         {isDiffing && <Difficults />}
         {isProcess && <Game initialData={data} />}
+        {showEndMenu && <MenuPopup />}
       </Root>
     </HomeContext.Provider>
   );

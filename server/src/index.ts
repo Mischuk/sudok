@@ -80,10 +80,22 @@ async function start() {
         const total = game[clients[0].id] + game[clients[1].id];
         const p = total / 100;
         const num = cells / p;
-        const cur = Math.round(num * 100) / 100;
+        const scorePlayerA = Math.round(num * 100) / 100;
+        const scorePlayerB = 100 - scorePlayerA;
+
+        for (const id in game) {
+          if (Object.prototype.hasOwnProperty.call(game, id)) {
+            if (game[id] === 0) {
+              io.emit(EVENTS.GAME.END, {
+                id,
+              });
+            }
+          }
+        }
+
         const res = {
-          [id]: 100 - cur,
-          [secondPlayer.id]: cur,
+          [id]: scorePlayerB,
+          [secondPlayer.id]: scorePlayerA,
         };
 
         clients.forEach((c) => {

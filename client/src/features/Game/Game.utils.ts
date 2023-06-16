@@ -51,3 +51,18 @@ export const getNums = (data: GameRow[]) => {
 
   return doneNums;
 };
+
+export const getTotalClosedCells = (data: GameRow[]) => {
+  return data.reduce<number>((acc, row) => {
+    let temp = 0;
+    row.cells.forEach((c) => {
+      if (c.value === null) {
+        temp++;
+      }
+      if (c.value && c.error) {
+        temp++;
+      }
+    });
+    return acc + temp;
+  }, 0);
+};
