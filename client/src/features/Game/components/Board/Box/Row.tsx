@@ -2,7 +2,7 @@ import { FC, useContext } from "react";
 import { Cell } from "../Cell/Cell";
 import { Cells, Root } from "./Row.styles";
 import { SelectContext } from "../../../Game.context";
-import { GameCell } from "../../../../../utils/types";
+import { GameCell } from "utils";
 
 interface Props {
   cells?: GameCell[];

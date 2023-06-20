@@ -1,6 +1,6 @@
 import { createContext } from "react";
 import { SelectedCell } from "./Game.types";
-import { CellNotes, GameRow } from "../../utils/types";
+import { CellNotes, GameRow } from "utils";
 
 export interface SelectContextType {
   selected: SelectedCell;

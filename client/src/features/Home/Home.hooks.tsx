@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { socket } from "../../api/instances";
 import { Game, GameStatus } from "./Home.types";
-import { DTO_Game, DTO_Player, EVENTS } from "utils";
+import { DTO_Player, EVENTS, GameRow } from "utils";
 import { INITIAL_GAME_DATA } from "./Home.consts";
-import { transformData } from "./Home.utils";
 
 export const usePlayers = () => {
   const [players, setPlayers] = useState<DTO_Player[]>([]);
@@ -34,10 +33,10 @@ export const useGame = () => {
     []
   );
 
-  const run = useCallback((data: DTO_Game) => {
+  const run = useCallback(({ data }: { data: GameRow[] }) => {
     setGame({
       state: GameStatus.Process,
-      data: transformData(data),
+      data,
     });
   }, []);
 

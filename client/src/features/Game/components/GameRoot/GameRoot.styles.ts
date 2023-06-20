@@ -3,8 +3,8 @@ import styled from "styled-components";
 export const Root = styled("div")`
   height: 100%;
   width: 100%;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 20px;
+  padding-bottom: 0px;
   display: flex;
   flex-direction: column;
   max-width: 500px;

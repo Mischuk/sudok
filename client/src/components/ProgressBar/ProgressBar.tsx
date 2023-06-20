@@ -3,22 +3,13 @@ import { Bar, Root } from "./ProgressBar.styles";
 
 interface Props {
   value: number;
-  position: "top" | "bottom";
+  color: string;
 }
 
-export const ProgressBar: FC<Props> = ({ position, value }) => {
-  const getStyles = () => {
-    if (position === "top") {
-      return { top: 0 };
-    }
-
-    if (position === "bottom") {
-      return { bottom: 0 };
-    }
-  };
+export const ProgressBar: FC<Props> = ({ value, color }) => {
   return (
-    <Root style={{ ...getStyles() }}>
-      <Bar style={{ transform: `translateX(${value}%)` }} />
+    <Root>
+      <Bar style={{ transform: `translateX(${value}%)`, background: color }} />
     </Root>
   );
 };

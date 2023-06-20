@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { INITIAL_PROGRESS } from "../../../Game.consts";
-import { EVENTS } from "utils";
+import { EVENTS, Progress } from "utils";
 import { socket } from "../../../../../api/instances";
 
 export const useProgress = () => {
-  const [progress, setProgress] = useState(INITIAL_PROGRESS);
+  const [progress, setProgress] = useState<Progress[]>([]);
 
   useEffect(() => {
-    const updateProgress = (progress: number) => setProgress(progress);
+    const updateProgress = ({ data }: { data: Progress[] }) => setProgress(data);
     socket.on(EVENTS.GAME.UPDATE_PROGRESS, updateProgress);
 
     return () => {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CLIENT_PORT = exports.BASE_URL = exports.PROTOCOL = exports.API_PREFIX = exports.ADDRESS = exports.PORT = void 0;
+exports.MAX_NUM = exports.DOT = exports.CLIENT_PORT = exports.BASE_URL = exports.PROTOCOL = exports.API_PREFIX = exports.ADDRESS = exports.PORT = void 0;
 var PORT = 8000;
 exports.PORT = PORT;
 var CLIENT_PORT = 3000;
@@ -11,5 +11,9 @@ var API_PREFIX = "api";
 exports.API_PREFIX = API_PREFIX;
 var PROTOCOL = "http";
 exports.PROTOCOL = PROTOCOL;
+var DOT = ".";
+exports.DOT = DOT;
+var MAX_NUM = 9;
+exports.MAX_NUM = MAX_NUM;
 var BASE_URL = "".concat(PROTOCOL, "://").concat(ADDRESS, ":").concat(PORT, "/").concat(API_PREFIX);
 exports.BASE_URL = BASE_URL;

@@ -12,6 +12,10 @@ export const EVENTS = {
       SERVER: "S_PLAYER_DISCONNECT",
       CLIENT: "C_PLAYER_DISCONNECT",
     },
+    PING: {
+      SERVER: "S_PLAYER_PING",
+      CLIENT: "C_PLAYER_PING",
+    },
   },
   DIFF: {
     SERVER: "S_DIFF",
@@ -32,6 +36,10 @@ export const EVENTS = {
     TIPED: {
       CLIENT: "C_CELL_TIPED",
       SERVER: "S_CELL_TIPED",
+    },
+    MISTAKE: {
+      CLIENT: "C_CELL_MISTAKE",
+      SERVER: "S_CELL_MISTAKE",
     },
   },
 };

@@ -1,7 +1,5 @@
-import { DTO_Game } from "utils";
-import { DOT, MAX_NUM } from "../../utils/consts";
-import { CellValue, GameRow, CellNotes } from "../../utils/types";
-import { ChunkRange, GameInfo } from "./Home.types";
+import { DOT, MAX_NUM } from "./constants";
+import { CellNotes, CellValue, ChunkRange, DTO_Game, GameInfo, GameRow } from "./types";
 
 const getValues = (data: string[]) =>
   data.map((v: string) => (v !== DOT ? Number(v) : null));

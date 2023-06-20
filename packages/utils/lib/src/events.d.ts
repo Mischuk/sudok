@@ -12,6 +12,10 @@ export declare const EVENTS: {
             SERVER: string;
             CLIENT: string;
         };
+        PING: {
+            SERVER: string;
+            CLIENT: string;
+        };
     };
     DIFF: {
         SERVER: string;
@@ -30,6 +34,10 @@ export declare const EVENTS: {
     CELL: {
         OPENED: string;
         TIPED: {
+            CLIENT: string;
+            SERVER: string;
+        };
+        MISTAKE: {
             CLIENT: string;
             SERVER: string;
         };

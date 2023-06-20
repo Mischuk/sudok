@@ -1,7 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import { BoardField, Controls, Root } from "./GameRoot.styles";
-import { ProgressBar } from "../../../../components/ProgressBar/ProgressBar";
-import { useProgress } from "./hooks/useProgress";
 import { Board } from "../Board/Board";
 import { DataContext, HistoryContext, SelectContext } from "../../Game.context";
 import { Control } from "../../../../components/Control/Control";
@@ -10,10 +8,11 @@ import { useCurrents } from "./hooks/useCurrents";
 import { useTips } from "./hooks/useTips";
 import { useRandomCell } from "./hooks/useRandomCell";
 import { socket } from "../../../../api/instances";
-import { EVENTS } from "utils";
+import { EVENTS, CellNotes } from "utils";
 import { AuthContext } from "../../../Auth/Auth.context";
-import { CellNotes } from "../../../../utils/types";
 import { toggleNum } from "../../../../utils";
+import { Progress } from "../Progress/Progress";
+import { useProgress } from "./hooks/useProgress";
 
 export const GameRoot = () => {
   const { id } = useContext(AuthContext);
@@ -25,17 +24,23 @@ export const GameRoot = () => {
   const randomCell = useRandomCell();
   const [isNotes, setIsNotes] = useState(false);
   const { voidCellsTotal } = useContext(DataContext);
+
   const onBackward = () => history.prev();
 
   const onClearCell = () => {
     if (!selected.position) return;
+    history.push();
 
     const { updateCell } = currents(selected);
-    updateCell({ value: null, notes: [], error: false });
+
+    const nextData = updateCell({ value: null, notes: [], error: false });
+
     onSelectCell({
       value: null,
       position: selected.position,
     });
+
+    socket.emit(EVENTS.CELL.OPENED, { data: nextData });
   };
 
   const onTip = () => tips.get();
@@ -43,7 +48,7 @@ export const GameRoot = () => {
   const onClickNum = (num: CellNotes) => {
     if (!selected.position || selected.value) return;
 
-    const { cell, updateCell, updateCellAxis } = currents(selected);
+    const { cell, updateCell, updateSquare } = currents(selected);
 
     if (isNotes) {
       updateCell({ notes: [...toggleNum(cell.notes, num)] });
@@ -52,7 +57,7 @@ export const GameRoot = () => {
     if (!isNotes) {
       const error = cell.answer !== num;
 
-      updateCellAxis({
+      const nextData = updateSquare({
         value: num,
         nextCell: {
           value: num,
@@ -63,27 +68,17 @@ export const GameRoot = () => {
       onSelectCell({ value: num, position: selected.position });
 
       if (error) {
-        socket.emit(EVENTS.CELL.TIPED.CLIENT, {
-          id,
-          cells: voidCellsTotal,
-        });
+        socket.emit(EVENTS.CELL.MISTAKE.CLIENT, { data: nextData });
       } else {
-        socket.emit(EVENTS.CELL.OPENED, {
-          id,
-          cells: voidCellsTotal - 1,
-        });
+        socket.emit(EVENTS.CELL.OPENED, { data: nextData });
       }
     }
   };
 
   useEffect(() => {
     const onCellTipedServer = () => {
-      randomCell.open({ changeSelect: false, highlighted: true });
-
-      socket.emit(EVENTS.CELL.OPENED, {
-        id,
-        cells: voidCellsTotal - 1,
-      });
+      const nextData = randomCell.open({ changeSelect: false, highlighted: true });
+      socket.emit(EVENTS.CELL.OPENED, { data: nextData });
     };
 
     socket.on(EVENTS.CELL.TIPED.SERVER, onCellTipedServer);
@@ -95,8 +90,7 @@ export const GameRoot = () => {
 
   return (
     <Root>
-      <ProgressBar value={progress} position="top" />
-      <ProgressBar value={progress} position="bottom" />
+      <Progress values={progress} />
 
       <BoardField>
         <Board />

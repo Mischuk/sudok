@@ -1,5 +1,5 @@
 import styled, { css } from "styled-components";
-import { MAX_NUM } from "../../../../../utils/consts";
+import { MAX_NUM } from "utils";
 
 interface NumNoteProps {
   $isActive: boolean;

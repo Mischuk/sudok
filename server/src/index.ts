@@ -2,14 +2,14 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import { createServer } from "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { ioServerOptions } from "./configs/options";
 import { ServerClient } from "./models/ServerClient";
 import RouteAuth from "./routes/auth.routes";
 import RouteMessage from "./routes/messages.routes";
 import RouteAll from "./routes/all.routes";
 import { DTO_Players, getRandomPuzzle } from "./utils";
-import { EVENTS, Diff, PORT } from "utils";
+import { EVENTS, Diff, PORT, GameRow, transformData } from "utils";
 
 const app = express();
 const httpServer = createServer(app);
@@ -23,18 +23,62 @@ app.use("/api/auth", RouteAuth);
 app.use("/api/messages", RouteMessage);
 app.use("/api/all", RouteAll);
 
+export const getTotalClosedCells = (data: GameRow[] = []) => {
+  return data.reduce<number>((acc, row) => {
+    let temp = 0;
+    row.cells.forEach((c) => {
+      if (c.value === null) {
+        temp++;
+      }
+      if (c.value && c.error) {
+        temp++;
+      }
+    });
+    return acc + temp;
+  }, 0);
+};
+
+interface History {
+  [id: string]: GameRow[];
+}
+
+interface UpdateProgress {
+  socket: Socket;
+  data: GameRow[];
+  history: History;
+}
+
 async function start() {
   try {
     const clients: ServerClient[] = [];
+    const history: History = {};
 
-    let game: any = {};
+    const getClients = (socket: Socket) => {
+      const eIdx = clients.findIndex(({ socketId }) => socketId === socket.id);
+      const rIdx = eIdx === 0 ? 1 : 0;
+
+      return {
+        emmiter: clients[eIdx],
+        reflector: clients[rIdx],
+      };
+    };
+
+    const calcProgress = async (history: History) => {
+      return clients.map(({ id }) => {
+        const data = history[id];
+        const closedCount = getTotalClosedCells(data);
+        const MAX_CELLS = 81;
+
+        const percantage = Math.round((1 / MAX_CELLS) * 100 * 100) / 100;
+        return { id, value: (MAX_CELLS - closedCount) * percantage };
+      });
+    };
 
     httpServer.listen(PORT);
 
     io.on(EVENTS.COMMON.CONNECTION, (socket) => {
       socket.on(EVENTS.PLAYER.CONNECT.CLIENT, async (data: { id: string }) => {
         const user = clients.find(({ id }) => id === data.id);
-
         if (!user) {
           clients.push({
             id: data.id,
@@ -57,63 +101,69 @@ async function start() {
         }
       });
 
+      // On select game difficulty
       socket.on(EVENTS.DIFF.CLIENT, async ({ diff }: { diff: Diff }) => {
+        // Push loading state
         io.emit(EVENTS.GAME.PREPARE.SERVER);
-        const data = await getRandomPuzzle(diff);
 
-        io.emit(EVENTS.GAME.START.SERVER, {
-          puzzle: data.puzzle,
-          solution: data.solution,
+        // Get random game from db by choosen difficulty
+        const data = await getRandomPuzzle(diff);
+        const transformedData = transformData(data);
+
+        // Set initial history state for both players
+        clients.forEach(({ id }) => {
+          history[id] = transformedData;
         });
 
-        const closedCells = data.puzzle.split("").filter((item) => item === ".").length;
+        // Push game for each client
+        io.emit(EVENTS.GAME.START.SERVER, { data: transformedData });
 
-        game[clients[0].id] = closedCells;
-        game[clients[1].id] = closedCells;
+        // Push players progress
+        const progress = await calcProgress(history);
+        io.emit(EVENTS.GAME.UPDATE_PROGRESS, { data: progress });
       });
 
-      const updateProgress = async ({ id, cells }: { id: string; cells: number }) => {
-        const secondPlayer = clients.find((c) => c.id !== id) as ServerClient;
+      const updateProgress = async ({ socket, data, history }: UpdateProgress) => {
+        const players = getClients(socket);
+        const { emmiter, reflector } = players;
 
-        game[id] = cells;
-
-        const total = game[clients[0].id] + game[clients[1].id];
-        const p = total / 100;
-        const num = cells / p;
-        const scorePlayerA = Math.round(num * 100) / 100;
-        const scorePlayerB = 100 - scorePlayerA;
-
-        for (const id in game) {
-          if (Object.prototype.hasOwnProperty.call(game, id)) {
-            if (game[id] === 0) {
-              io.emit(EVENTS.GAME.END, {
-                id,
-              });
-            }
-          }
-        }
-
-        const res = {
-          [id]: scorePlayerB,
-          [secondPlayer.id]: scorePlayerA,
-        };
-
-        clients.forEach((c) => {
-          io.to(c.socketId).emit(EVENTS.GAME.UPDATE_PROGRESS, res[c.id]);
-        });
-
-        return secondPlayer;
+        if (!emmiter || !reflector) return;
+        history[emmiter.id] = data;
+        const progress = await calcProgress(history);
+        io.emit(EVENTS.GAME.UPDATE_PROGRESS, { data: progress });
+        return players;
       };
 
-      socket.on(EVENTS.CELL.OPENED, updateProgress);
+      socket.on(EVENTS.CELL.OPENED, async ({ data }: { data: GameRow[] }) => {
+        updateProgress({ socket, data, history });
+      });
 
-      socket.on(
-        EVENTS.CELL.TIPED.CLIENT,
-        async ({ id, cells }: { id: string; cells: number }) => {
-          const secondPlayer = await updateProgress({ id, cells });
-          io.to(secondPlayer?.socketId).emit(EVENTS.CELL.TIPED.SERVER);
-        }
-      );
+      // socket.on(EVENTS.PLAYER.PING.CLIENT, async (data: GameRow[]) => {
+      //   const player = getClient(socket);
+
+      //   if (!player) return;
+      //   history[player.id] = data || [];
+
+      //   const progress = await calcProgress(history);
+      //   console.log("progress", progress);
+      //   io.emit(EVENTS.GAME.UPDATE_PROGRESS, { data: progress });
+      // });
+
+      socket.on(EVENTS.CELL.TIPED.CLIENT, async ({ data }: { data: GameRow[] }) => {
+        const players = await updateProgress({ socket, data, history });
+        if (!players) return;
+
+        // Push event to open random cell
+        io.to(players.reflector.socketId).emit(EVENTS.CELL.TIPED.SERVER);
+      });
+
+      socket.on(EVENTS.CELL.MISTAKE.CLIENT, async ({ data }: { data: GameRow[] }) => {
+        const players = await updateProgress({ socket, data, history });
+        if (!players) return;
+
+        // Push event to open random cell
+        io.to(players.reflector.socketId).emit(EVENTS.CELL.TIPED.SERVER);
+      });
     });
   } catch (e) {
     console.error(e);

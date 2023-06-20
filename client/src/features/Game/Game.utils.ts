@@ -1,5 +1,5 @@
 import { deepCopy, getRandomInt } from "../../utils";
-import { CellNotes, GameRow } from "../../utils/types";
+import { CellNotes, GameRow } from "utils";
 import { RandomItem } from "./Game.types";
 
 export const getVoidCells = (data: GameRow[]) => {
@@ -38,7 +38,7 @@ export const getNums = (data: GameRow[]) => {
   const doneNums: CellNotes[] = [];
   const rows = deepCopy<GameRow[]>(data);
 
-  for (let index = 1; index < 9; index++) {
+  for (let index = 1; index <= 9; index++) {
     const num = rows.reduce((acc, row) => {
       const cell = row.cells.find(({ value, error }) => value === index && !error);
       return cell ? acc + 1 : acc;

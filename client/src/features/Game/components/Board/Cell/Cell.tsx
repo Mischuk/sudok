@@ -1,7 +1,7 @@
 import { FC, useContext } from "react";
 import { NumNote, Root } from "./Cell.styles";
 import { SelectContext } from "../../../Game.context";
-import { CellNotes, CellValue } from "../../../../../utils/types";
+import { CellNotes, CellValue } from "utils";
 import { NUM_NOTE_POSITION } from "./Cell.consts";
 import { CellCoordinates } from "../../../Game.types";
 

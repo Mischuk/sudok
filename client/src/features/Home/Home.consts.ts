@@ -1,5 +1,5 @@
-import { INITIAL_CELL, MAX_NUM } from "../../utils/consts";
-import { GameRow } from "../../utils/types";
+import { INITIAL_CELL } from "../../utils/consts";
+import { GameRow, MAX_NUM } from "utils";
 
 const INITIAL_PUZZLES = new Array(MAX_NUM).fill(null);
 

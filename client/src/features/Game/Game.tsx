@@ -3,9 +3,10 @@ import { DataContext, HistoryContext, SelectContext } from "./Game.context";
 import { INITIAL_SELECTED } from "./Game.consts";
 import { History, SelectedCell } from "./Game.types";
 import { deepCopy } from "../../utils";
-import { GameRow } from "../../utils/types";
 import { getNums, getTotalClosedCells } from "./Game.utils";
 import { GameRoot } from "./components/GameRoot/GameRoot";
+import { EVENTS, GameRow } from "utils";
+import { socket } from "../../api/instances";
 
 interface Props {
   initialData: GameRow[];
@@ -17,17 +18,16 @@ export const Game: FC<Props> = ({ initialData }) => {
   const voidCellsTotal = getTotalClosedCells(data);
   const completeNums = getNums(data);
   const [history, setHistory] = useState<History[]>([]);
-  const historyPush = useCallback(
-    () =>
-      setHistory((prev) => [
-        ...prev,
-        {
-          data: deepCopy<GameRow[]>(data),
-          selected: deepCopy<SelectedCell>(selected),
-        },
-      ]),
-    [data, selected]
-  );
+
+  const historyPush = useCallback(() => {
+    setHistory((prev) => [
+      ...prev,
+      {
+        data: deepCopy<GameRow[]>(data),
+        selected: deepCopy<SelectedCell>(selected),
+      },
+    ]);
+  }, [data, selected]);
 
   const historyPrev = useCallback(() => {
     if (!history.length) return;
@@ -36,6 +36,8 @@ export const Game: FC<Props> = ({ initialData }) => {
     setHistory((prev) => prev.slice(0, -1));
     onSelectCell(selected);
     setData(data);
+
+    socket.emit(EVENTS.CELL.OPENED, { data });
   }, [history]);
 
   const handleSelectCell = useCallback(
@@ -65,6 +67,16 @@ export const Game: FC<Props> = ({ initialData }) => {
   useEffect(() => {
     setData(initialData);
   }, [initialData]);
+
+  // useEffect(() => {
+  //   let interval = setInterval(() => {
+  //     socket.emit(EVENTS.PLAYER.PING.CLIENT, { data });
+  //   }, 5000);
+
+  //   return () => {
+  //     clearInterval(interval);
+  //   };
+  // }, [data]);
 
   return (
     <SelectContext.Provider value={{ selected, onSelectCell: handleSelectCell }}>

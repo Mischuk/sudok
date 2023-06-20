@@ -1,4 +1,4 @@
-import { CellValue, GameRow } from "../../utils/types";
+import { CellValue, GameRow } from "utils";
 
 export interface CellCoordinates {
   row: number;

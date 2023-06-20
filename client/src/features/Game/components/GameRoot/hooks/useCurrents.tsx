@@ -1,15 +1,27 @@
 import { useContext } from "react";
-import { deepCopy } from "../../../../../utils";
-import { GameRow, GameCell } from "../../../../../utils/types";
+import { deepCopy, getSquare } from "../../../../../utils";
+import { GameRow, GameCell } from "utils";
 import { VoidSelected } from "../../../Game.consts";
 import { SelectedCell } from "../../../Game.types";
 import { DataContext, HistoryContext } from "../../../Game.context";
+
+interface Currents {
+  cell: GameCell;
+  updateCell: (nextCell: Partial<GameCell>) => void;
+  updateSquare: ({
+    nextCell,
+    value,
+  }: {
+    value: number;
+    nextCell: Partial<GameCell>;
+  }) => void;
+}
 
 export const useCurrents = () => {
   const { data, updateData } = useContext(DataContext);
   const history = useContext(HistoryContext);
 
-  const currents = (selected: SelectedCell) => {
+  const currents = (selected: SelectedCell): Currents => {
     const { position } = selected;
     if (!position) return VoidSelected;
 
@@ -25,6 +37,8 @@ export const useCurrents = () => {
       };
 
       updateData([...rows]);
+
+      return rows;
     };
 
     const updateAxis = ({ value }: { value: number }): GameRow[] => {
@@ -67,17 +81,47 @@ export const useCurrents = () => {
       value: number;
       nextCell: Partial<GameCell>;
     }) => {
-      history.push();
-
       rows[position.row].cells[position.col] = {
         ...cell,
         ...nextCell,
       };
-
-      updateData([...updateAxis({ value })]);
+      const nextData = updateAxis({ value });
+      return nextData;
     };
 
-    return { cell, updateCell, updateCellAxis };
+    const updateSquare = ({
+      nextCell,
+      value,
+    }: {
+      value: number;
+      nextCell: Partial<GameCell>;
+    }) => {
+      history.push();
+
+      const nextData = updateCellAxis({ nextCell, value });
+
+      const row = position.row;
+      const col = position.col;
+
+      const { cells = [] } = getSquare({ row, col });
+
+      const rows = deepCopy<GameRow[]>(nextData);
+
+      cells.forEach(({ col, row }) => {
+        const cell = rows[row].cells[col];
+
+        rows[row].cells[col] = {
+          ...cell,
+          notes: cell.notes.filter((i) => i !== value),
+        };
+      });
+
+      updateData([...rows]);
+
+      return rows;
+    };
+
+    return { cell, updateCell, updateSquare };
   };
 
   return { currents };
