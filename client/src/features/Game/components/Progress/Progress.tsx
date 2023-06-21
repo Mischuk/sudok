@@ -23,9 +23,6 @@ export const Progress: FC<Props> = ({ values }) => {
     [values, id]
   );
 
-  // Hide progress on single or null players
-  // if (values.length !== MIN_PLAYERS) return null;
-
   return (
     <Root>
       <ProgressBar value={sortedValues[0]?.value || 1} color="#7ac452" />

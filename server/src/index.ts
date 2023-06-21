@@ -10,6 +10,7 @@ import RouteMessage from "./routes/messages.routes";
 import RouteAll from "./routes/all.routes";
 import { DTO_Players, getRandomPuzzle } from "./utils";
 import { EVENTS, Diff, PORT, GameRow, transformData } from "utils";
+import { Subject } from "rxjs";
 
 const app = express();
 const httpServer = createServer(app);
@@ -52,6 +53,15 @@ async function start() {
   try {
     const clients: ServerClient[] = [];
     const history: History = {};
+    const stream = new Subject<{ id: string; value: number }[]>();
+
+    stream.subscribe((value) => {
+      const winner = value.find((el) => el.value === 100);
+
+      if (winner) {
+        io.emit(EVENTS.GAME.END, { id: winner.id });
+      }
+    });
 
     const getClients = (socket: Socket) => {
       const eIdx = clients.findIndex(({ socketId }) => socketId === socket.id);
@@ -64,14 +74,16 @@ async function start() {
     };
 
     const calcProgress = async (history: History) => {
-      return clients.map(({ id }) => {
+      const progress = clients.map(({ id }) => {
         const data = history[id];
         const closedCount = getTotalClosedCells(data);
         const MAX_CELLS = 81;
 
         const percantage = Math.round((1 / MAX_CELLS) * 100 * 100) / 100;
-        return { id, value: (MAX_CELLS - closedCount) * percantage };
+        return { id, value: closedCount ? (MAX_CELLS - closedCount) * percantage : 100 };
       });
+      stream.next(progress);
+      return progress;
     };
 
     httpServer.listen(PORT);
@@ -83,6 +95,7 @@ async function start() {
           clients.push({
             id: data.id,
             socketId: socket.id,
+            online: true,
           });
         }
 
@@ -117,7 +130,7 @@ async function start() {
           clues: 23,
           difficulty: 0,
         };
-        const transformedData = transformData(data);
+        const transformedData = transformData(dat);
 
         // Set initial history state for both players
         clients.forEach(({ id }) => {
