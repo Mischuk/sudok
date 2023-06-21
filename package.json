@@ -1,0 +1,20 @@
+{
+      "name": "sudok",
+      "version": "1.0.0",
+      "description": "",
+      "scripts": {
+          "build": "cd ./packages/utils && npm run build && cd ../../server && npm run build && cd ../client && npm run build",
+          "test": "echo \"No test specified\" && exit 1",
+          "start": "cd ./server && npm run start && cd ../client && npm run start"
+      },
+      "repository": {
+          "type": "git",
+          "url": "git+https://github.com/Mischuk/sudok.git"
+      },
+      "author": "",
+      "license": "ISC",
+      "bugs": {
+          "url": "https://github.com/Mischuk/sudok/issues"
+      },
+      "homepage": "https://github.com/Mischuk/sudok#readme"
+  }
