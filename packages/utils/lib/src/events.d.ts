@@ -30,6 +30,10 @@ export declare const EVENTS: {
         };
         UPDATE_PROGRESS: string;
         END: string;
+        RESTART: {
+            CLIENT: string;
+            SERVER: string;
+        };
     };
     CELL: {
         OPENED: string;

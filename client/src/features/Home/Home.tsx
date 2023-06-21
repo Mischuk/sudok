@@ -14,7 +14,7 @@ import { AuthContext } from "../Auth/Auth.context";
 const Home = () => {
   const user = useContext(AuthContext);
   const { players, totalPlayers } = usePlayers();
-  const { data, status, changeStatus, run } = useGame();
+  const { data, status, changeStatus, run, reset } = useGame();
   const [endGame, setEndGame] = useState({
     isFinish: false,
     win: false,
@@ -51,6 +51,23 @@ const Home = () => {
       socket.off(EVENTS.GAME.END, handleEndGame);
     };
   }, [user.id]);
+
+  useEffect(() => {
+    const handleRestartGame = () => {
+      setEndGame({
+        isFinish: false,
+        win: false,
+      });
+
+      reset();
+    };
+
+    socket.on(EVENTS.GAME.RESTART.SERVER, handleRestartGame);
+
+    return () => {
+      socket.off(EVENTS.GAME.RESTART.SERVER, handleRestartGame);
+    };
+  }, [reset]);
 
   const isWaiting = totalPlayers !== MIN_PLAYERS && totalPlayers > 0;
   const isInitial = status === GameStatus.Init;

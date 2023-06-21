@@ -22,11 +22,12 @@ export const usePlayers = () => {
   return { players, totalPlayers: players.length };
 };
 
+const INITIAL_GAME = {
+  state: GameStatus.Init,
+  data: INITIAL_GAME_DATA,
+};
 export const useGame = () => {
-  const [game, setGame] = useState<Game>({
-    state: GameStatus.Init,
-    data: INITIAL_GAME_DATA,
-  });
+  const [game, setGame] = useState<Game>(INITIAL_GAME);
 
   const changeGameStatus = useCallback(
     (status: GameStatus) => setGame((prev) => ({ ...prev, state: status })),
@@ -40,13 +41,18 @@ export const useGame = () => {
     });
   }, []);
 
+  const reset = useCallback(() => {
+    setGame(INITIAL_GAME);
+  }, []);
+
   return useMemo(
     () => ({
       run,
       data: game.data,
       status: game.state,
       changeStatus: changeGameStatus,
+      reset,
     }),
-    [changeGameStatus, game.state, run, game.data]
+    [changeGameStatus, game.state, run, game.data, reset]
   );
 };

@@ -53,9 +53,9 @@ async function start() {
   try {
     const clients: ServerClient[] = [];
     const history: History = {};
-    const stream = new Subject<{ id: string; value: number }[]>();
+    const progressObserv = new Subject<{ id: string; value: number }[]>();
 
-    stream.subscribe((value) => {
+    progressObserv.subscribe((value) => {
       const winner = value.find((el) => el.value === 100);
 
       if (winner) {
@@ -82,7 +82,7 @@ async function start() {
         const percantage = Math.round((1 / MAX_CELLS) * 100 * 100) / 100;
         return { id, value: closedCount ? (MAX_CELLS - closedCount) * percantage : 100 };
       });
-      stream.next(progress);
+      progressObserv.next(progress);
       return progress;
     };
 
@@ -130,7 +130,7 @@ async function start() {
           clues: 23,
           difficulty: 0,
         };
-        const transformedData = transformData(dat);
+        const transformedData = transformData(data);
 
         // Set initial history state for both players
         clients.forEach(({ id }) => {
@@ -147,7 +147,7 @@ async function start() {
           clients.forEach((client) => {
             io.to(client.socketId).emit(EVENTS.GAME.UPDATE_PROGRESS, { data: progress });
           });
-        }, 100);
+        }, 500);
       });
 
       const updateProgress = async ({ socket, data, history }: UpdateProgress) => {
@@ -179,6 +179,21 @@ async function start() {
 
         // Push event to open random cell
         io.to(players.reflector.socketId).emit(EVENTS.CELL.TIPED.SERVER);
+      });
+
+      socket.on(EVENTS.GAME.RESTART.CLIENT, async () => {
+        // Reset history
+        for (const key in history) {
+          if (Object.prototype.hasOwnProperty.call(history, key)) {
+            history[key] = [];
+          }
+        }
+
+        // Reset progress
+        const clearProgress = clients.map(({ id }) => id).map((id) => ({ id, value: 0 }));
+        progressObserv.next(clearProgress);
+
+        io.emit(EVENTS.GAME.RESTART.SERVER);
       });
     });
   } catch (e) {

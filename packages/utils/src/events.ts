@@ -30,6 +30,10 @@ export const EVENTS = {
     },
     UPDATE_PROGRESS: "GAME_UPDATE_PROGRESS",
     END: "GAME_END",
+    RESTART: {
+      CLIENT: "C_GAME_RESTART",
+      SERVER: "S_GAME_RESTART",
+    },
   },
   CELL: {
     OPENED: "CELL_OPENED",
