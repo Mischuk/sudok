@@ -65,13 +65,6 @@ export const Root = styled("div")<RootProps>`
     }
   }
 
-  ${({ $isGift }) =>
-    $isGift &&
-    css`
-      color: green;
-      background: #c9f4c9;
-    `}
-
   ${({ $isHighlighted }) =>
     $isHighlighted &&
     css`
@@ -84,6 +77,13 @@ export const Root = styled("div")<RootProps>`
     css`
       color: black;
       background: var(--select-number);
+    `}
+
+  ${({ $isGift }) =>
+    $isGift &&
+    css`
+      color: green;
+      background: #c9f4c9;
     `}
 
 

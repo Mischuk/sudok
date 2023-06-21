@@ -11,7 +11,7 @@ export const useTips = () => {
 
   const get = () => {
     if (!tips) return;
-    const nextData = randomCell.open({ changeSelect: true, highlighted: false });
+    const nextData = randomCell.open({ income: false });
     setTips(tips - 1);
 
     socket.emit(EVENTS.CELL.TIPED.CLIENT, { data: nextData });

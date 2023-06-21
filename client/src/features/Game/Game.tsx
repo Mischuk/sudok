@@ -1,12 +1,13 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { DataContext, HistoryContext, SelectContext } from "./Game.context";
 import { INITIAL_SELECTED } from "./Game.consts";
-import { History, SelectedCell } from "./Game.types";
-import { deepCopy } from "../../utils";
+import { CellCoordinates, History, SelectedCell } from "./Game.types";
+import { deepCopy, getSquare } from "../../utils";
 import { getNums, getTotalClosedCells } from "./Game.utils";
 import { GameRoot } from "./components/GameRoot/GameRoot";
-import { EVENTS, GameRow } from "utils";
+import { EVENTS, GameCell, GameRow } from "utils";
 import { socket } from "../../api/instances";
+import { Axis } from "../../utils/types";
 
 interface Props {
   initialData: GameRow[];
@@ -40,6 +41,94 @@ export const Game: FC<Props> = ({ initialData }) => {
     socket.emit(EVENTS.CELL.OPENED, { data });
   }, [history]);
 
+  const historyPull = useCallback(
+    ({
+      nextPosition,
+      nextCell,
+    }: {
+      nextCell: GameCell;
+      nextPosition: CellCoordinates;
+    }) => {
+      setHistory((prev) => {
+        return prev.map((h) => {
+          const rows = h.data;
+
+          rows[nextPosition.row].cells[nextPosition.col] = {
+            ...nextCell,
+            notes: [],
+          };
+
+          const updateAxis = ({ value, position }: Axis) => {
+            const row = rows[position.row];
+            const updCells: GameCell[] = row.cells.map((c) => {
+              return {
+                ...c,
+                notes: c.notes.filter((i) => i !== value),
+              };
+            });
+            rows[position.row] = { ...row, cells: updCells };
+
+            const updRows: GameRow[] = rows.map((row) => {
+              const updCells = row.cells.map((cell, index) => {
+                if (index === position.col) {
+                  return {
+                    ...cell,
+                    notes: cell.notes.filter((i) => i !== value),
+                  };
+                }
+                return {
+                  ...cell,
+                };
+              });
+              return {
+                ...row,
+                cells: updCells,
+              };
+            });
+
+            return updRows;
+          };
+
+          const updateNotes = ({ value, position }: Axis) => {
+            const nextData = updateAxis({
+              value,
+              position,
+            });
+
+            const row = position.row;
+            const col = position.col;
+
+            const { cells = [] } = getSquare({ row, col });
+
+            const rows = deepCopy<GameRow[]>(nextData);
+
+            cells.forEach(({ col, row }) => {
+              const cell = rows[row].cells[col];
+
+              rows[row].cells[col] = {
+                ...cell,
+                notes: cell.notes.filter((i) => i !== value),
+              };
+            });
+
+            return rows;
+          };
+
+          const nextRows = updateNotes({
+            value: nextCell.answer,
+            position: nextPosition,
+          });
+
+          return {
+            ...h,
+            data: nextRows,
+          };
+        });
+      });
+    },
+    []
+  );
+
   const handleSelectCell = useCallback(
     (nextSelectCell: SelectedCell) => {
       const removeCellHighlight = () => {
@@ -68,16 +157,6 @@ export const Game: FC<Props> = ({ initialData }) => {
     setData(initialData);
   }, [initialData]);
 
-  // useEffect(() => {
-  //   let interval = setInterval(() => {
-  //     socket.emit(EVENTS.PLAYER.PING.CLIENT, { data });
-  //   }, 5000);
-
-  //   return () => {
-  //     clearInterval(interval);
-  //   };
-  // }, [data]);
-
   return (
     <SelectContext.Provider value={{ selected, onSelectCell: handleSelectCell }}>
       <DataContext.Provider
@@ -89,7 +168,7 @@ export const Game: FC<Props> = ({ initialData }) => {
         }}
       >
         <HistoryContext.Provider
-          value={{ push: historyPush, prev: historyPrev, history }}
+          value={{ push: historyPush, prev: historyPrev, pull: historyPull, history }}
         >
           <GameRoot />
         </HistoryContext.Provider>

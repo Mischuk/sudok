@@ -33,10 +33,12 @@ export interface HistoryContextType {
   prev: any;
   push: any;
   history: any;
+  pull: any;
 }
 
 export const HistoryContext = createContext<HistoryContextType>({
   prev: () => {},
   push: () => {},
+  pull: () => {},
   history: [],
 });

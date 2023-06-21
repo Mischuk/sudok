@@ -3,35 +3,30 @@ import { deepCopy, getSquare } from "../../../../../utils";
 import { GameCell, GameRow } from "utils";
 import { getRandomVoidCell } from "../../../Game.utils";
 import { DataContext, HistoryContext, SelectContext } from "../../../Game.context";
-import { CellCoordinates } from "../../../Game.types";
-interface Axis {
-  value: number;
-  position: CellCoordinates;
-}
+import { Axis } from "../../../../../utils/types";
+
 export const useRandomCell = () => {
   const { data, updateData } = useContext(DataContext);
   const { onSelectCell } = useContext(SelectContext);
   const history = useContext(HistoryContext);
 
-  const open = ({
-    highlighted,
-    changeSelect = true,
-  }: {
-    changeSelect: boolean;
-    highlighted: boolean;
-  }) => {
+  const open = ({ income }: { income: boolean }) => {
     const rows = deepCopy<GameRow[]>(data);
     const randomCell = getRandomVoidCell(rows);
     const cell = rows[randomCell.row].cells[randomCell.col];
 
-    history.push();
-
-    rows[randomCell.row].cells[randomCell.col] = {
+    const nextCell = {
       ...cell,
       value: randomCell.answer,
       notes: [],
       error: false,
-      highlighted,
+      highlighted: income,
+    };
+
+    rows[randomCell.row].cells[randomCell.col] = nextCell;
+    const nextPosition = {
+      row: randomCell.row,
+      col: randomCell.col,
     };
 
     const updateAxis = ({ value, position }: Axis) => {
@@ -92,13 +87,19 @@ export const useRandomCell = () => {
 
     const nextData = updateNotes({
       value: randomCell.answer,
-      position: {
-        row: randomCell.row,
-        col: randomCell.col,
-      },
+      position: nextPosition,
     });
 
-    if (changeSelect) {
+    if (income) {
+      history.pull({
+        nextCell,
+        nextPosition,
+      });
+    } else {
+      history.push();
+    }
+
+    if (!income) {
       onSelectCell({
         value: randomCell.answer,
         position: {

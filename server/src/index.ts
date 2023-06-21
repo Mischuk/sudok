@@ -108,6 +108,15 @@ async function start() {
 
         // Get random game from db by choosen difficulty
         const data = await getRandomPuzzle(diff);
+        // const dat = {
+        //   id: 2,
+        //   puzzle:
+        //     "9.4.172.67286534.96.59.2738176425893452398167389176542897564321563281974241739685",
+        //   solution:
+        //     "934817256728653419615942738176425893452398167389176542897564321563281974241739685",
+        //   clues: 23,
+        //   difficulty: 0,
+        // };
         const transformedData = transformData(data);
 
         // Set initial history state for both players

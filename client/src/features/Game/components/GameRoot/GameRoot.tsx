@@ -77,7 +77,7 @@ export const GameRoot = () => {
 
   useEffect(() => {
     const onCellTipedServer = () => {
-      const nextData = randomCell.open({ changeSelect: false, highlighted: true });
+      const nextData = randomCell.open({ income: true });
       socket.emit(EVENTS.CELL.OPENED, { data: nextData });
     };
 
