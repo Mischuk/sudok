@@ -3,7 +3,6 @@ import { ProgressBar } from "../../../../components/ProgressBar/ProgressBar";
 import { FC, useContext, useMemo } from "react";
 import { AuthContext } from "../../../Auth/Auth.context";
 import { Progress as I_Progress } from "utils";
-import { MIN_PLAYERS } from "../../../../utils/consts";
 
 const Root = styled("div")`
   position: absolute;
@@ -25,14 +24,12 @@ export const Progress: FC<Props> = ({ values }) => {
   );
 
   // Hide progress on single or null players
-  if (values.length !== MIN_PLAYERS) return null;
-
-  const [me, secondPlayer] = sortedValues;
+  // if (values.length !== MIN_PLAYERS) return null;
 
   return (
     <Root>
-      <ProgressBar value={me.value} color="#7ac452" />
-      <ProgressBar value={secondPlayer.value} color="#f76464" />
+      <ProgressBar value={sortedValues[0]?.value || 1} color="#7ac452" />
+      <ProgressBar value={sortedValues[1]?.value || 1} color="#f76464" />
     </Root>
   );
 };

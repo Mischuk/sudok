@@ -19,5 +19,5 @@ export const Bar = styled("div")`
   left: -100%;
   top: 0;
   width: 100%;
-  transition: all 500ms ease;
+  transition: all 1000ms ease;
 `;

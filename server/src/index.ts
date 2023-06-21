@@ -108,15 +108,15 @@ async function start() {
 
         // Get random game from db by choosen difficulty
         const data = await getRandomPuzzle(diff);
-        // const dat = {
-        //   id: 2,
-        //   puzzle:
-        //     "9.4.172.67286534.96.59.2738176425893452398167389176542897564321563281974241739685",
-        //   solution:
-        //     "934817256728653419615942738176425893452398167389176542897564321563281974241739685",
-        //   clues: 23,
-        //   difficulty: 0,
-        // };
+        const dat = {
+          id: 2,
+          puzzle:
+            "..4817256728653419615942738176425893452398167389176542897564321563281974241739685",
+          solution:
+            "934817256728653419615942738176425893452398167389176542897564321563281974241739685",
+          clues: 23,
+          difficulty: 0,
+        };
         const transformedData = transformData(data);
 
         // Set initial history state for both players
@@ -129,7 +129,12 @@ async function start() {
 
         // Push players progress
         const progress = await calcProgress(history);
-        io.emit(EVENTS.GAME.UPDATE_PROGRESS, { data: progress });
+
+        setTimeout(() => {
+          clients.forEach((client) => {
+            io.to(client.socketId).emit(EVENTS.GAME.UPDATE_PROGRESS, { data: progress });
+          });
+        }, 100);
       });
 
       const updateProgress = async ({ socket, data, history }: UpdateProgress) => {
@@ -146,17 +151,6 @@ async function start() {
       socket.on(EVENTS.CELL.OPENED, async ({ data }: { data: GameRow[] }) => {
         updateProgress({ socket, data, history });
       });
-
-      // socket.on(EVENTS.PLAYER.PING.CLIENT, async (data: GameRow[]) => {
-      //   const player = getClient(socket);
-
-      //   if (!player) return;
-      //   history[player.id] = data || [];
-
-      //   const progress = await calcProgress(history);
-      //   console.log("progress", progress);
-      //   io.emit(EVENTS.GAME.UPDATE_PROGRESS, { data: progress });
-      // });
 
       socket.on(EVENTS.CELL.TIPED.CLIENT, async ({ data }: { data: GameRow[] }) => {
         const players = await updateProgress({ socket, data, history });

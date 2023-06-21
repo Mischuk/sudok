@@ -6,7 +6,9 @@ export const useProgress = () => {
   const [progress, setProgress] = useState<Progress[]>([]);
 
   useEffect(() => {
-    const updateProgress = ({ data }: { data: Progress[] }) => setProgress(data);
+    const updateProgress = ({ data }: { data: Progress[] }) => {
+      setProgress(data);
+    };
     socket.on(EVENTS.GAME.UPDATE_PROGRESS, updateProgress);
 
     return () => {
